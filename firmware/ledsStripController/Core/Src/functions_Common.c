@@ -59,7 +59,7 @@ void floatToStr(char* str, float num, uint8_t precision, uint8_t maxLen) {
     uint32_t decPart = (uint32_t)((num - intPart) * scale);
 
     // Conversione della parte intera
-    //uint8_t intStart = i;
+    uint8_t intStart = i;
     if (intPart == 0) {
         if (i < maxLen - 1) {
             str[i++] = '0';
@@ -93,22 +93,22 @@ void floatToStr(char* str, float num, uint8_t precision, uint8_t maxLen) {
     }
 
     // Rimuovere zeri finali superflui
-    /*if (precision > 0) {
+    if (precision > 0) {
         while (i > intStart && str[i - 1] == '0') {
             str[--i] = '\0';
         }
         if (i > intStart && str[i - 1] == '.') {
             str[--i] = '\0';
         }
-    }*/
+    }
 
     // Aggiungere terminatore di stringa
-    /*if (i < maxLen) {
+    if (i < maxLen) {
     	memset(&str[i], ' ', maxLen-i-1); //pad with spaces
         str[maxLen - 1] = '\0'; //if instead we want to close the string without padding, we would just need str[i] = '\0' without memset.
     } else if (maxLen > 0) {
         str[maxLen - 1] = '\0';
-    }*/
+    }
 }
 
 
