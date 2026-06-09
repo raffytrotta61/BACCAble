@@ -18,6 +18,7 @@
 		#endif
 		immobilizerEnabled = (uint8_t)readFromFlash(1);  //parameter1 stored in ram, so that we can get it. By default Immo is enabled
 		if(immobilizerEnabled) executeDashboardBlinks=2; //shows the user that the immobilizer is active (or not)
+
 		function_smart_disable_start_stop_enabled=(uint8_t)readFromFlash(2);  //parameter2 stored in ram, so that we can get it. By default S&S is enabled
 		function_led_strip_controller_enabled=(uint8_t)readFromFlash(3); //By default led is disabled
 		function_shift_indicator_enabled=(uint8_t)readFromFlash(4); //By default it is disabled
@@ -413,35 +414,12 @@
 
 		if(function_pedal_booster_enabled){ //if enabled, communicate with schizzaForte each 250msec
 			if(currentRpmSpeed<400) currentSchizzaforteMap='-'; //if engine is stopped. Forget the pedal map setting, so that baccable will be forced to set it again on schizzaforte
-
-			if(function_pedal_booster_enabled==8){ // Kids Limiter
-				// Independent check 1: ensure map A with minimum power is active (handles boot and any drift)
-				if(currentRpmSpeed>400 && currentSchizzaforteMap!='A'){
-					if((currentTime-last_queued_serial_to_schizzaForte_msg_time)>(4*TIMING__C1____SCHIZZAFORTE_SERIAL_TIMEOUT_REPLY_MS)){
-						last_queued_serial_to_schizzaForte_msg_time=currentTime;
-						int8_t saved_pedal_map_power=pedal_map_power;
-						pedal_map_power=-10;
-						setSchizzaforteMap(3); //A map with minimum power
-						pedal_map_power=saved_pedal_map_power;
-					}
-				}
-				// Independent check 2: override throttle to 0 when RPM or speed exceed thresholds
-				uint32_t kidsRpmLimit = function_is_diesel_enabled ? 3000 : 4000;
-				if((currentRpmSpeed>kidsRpmLimit || currentSpeed_km_h>100.0f) && currentRpmSpeed>400){
-					if((currentTime-last_queued_serial_to_schizzaForte_msg_time)>400){
-						last_queued_serial_to_schizzaForte_msg_time=currentTime;
-						uint8_t kidsLimMsg[UART1_BUFFER_SIZE]={'#',0xff,0x00,0,0,0,0,0,0};
-						kidsLimMsg[8]=calculateCRC(kidsLimMsg,UART1_BUFFER_SIZE);
-						addToUART1SendQueue(kidsLimMsg, 9);
-					}
-				}
-			}else{
 			if(mapCommandNotApplied() && (currentRpmSpeed>400)){ //only if the map command was not correctly received and engine is on
 				if((currentTime - last_queued_serial_to_schizzaForte_msg_time)>(4 * TIMING__C1____SCHIZZAFORTE_SERIAL_TIMEOUT_REPLY_MS) ){
 					last_queued_serial_to_schizzaForte_msg_time=currentTime; //avoid to Return Here
 
-						if(function_pedal_booster_enabled==1){ // 1=Auto: set map according to DNA selector
-							//function_pedal_booster_enabled: 0=disabled, 1=Automatic Map, 2=Bypass, 3=All Weather Map, 4=Natural Map, 5=Dynamic Map, 6=Race Map, 7=Hybrid Align, 8=Kids Limiter
+					if(function_pedal_booster_enabled==1){ // 1=auto //set mode according to DNAR current selection
+						//function_pedal_booster_enabled: 0=disabled, 1=Automatic Map, 2=Bypass, 3=All Weather Map, 4=Natural Map, 5=Dynamic Map, 6=Race Map
 						switch(currentDNAmode){
 							case 0x00: //Natural
 								setSchizzaforteMap(4);
@@ -458,15 +436,9 @@
 							default:
 								setSchizzaforteMap(2); //bypass
 						}
-						}else if(function_pedal_booster_enabled==7){ // 7=Hybrid Align: N map in A/N/D, Race map in Race
-							if(currentDNAmode==0x30){
-								setSchizzaforteMap(6); //Race map when DNA is in Race
 					}else{
-								setSchizzaforteMap(4); //Natural map when DNA is in A, N or D
-							}
-						}else{
-							setSchizzaforteMap(function_pedal_booster_enabled); //direct map for values 2-6
-						}
+
+						setSchizzaforteMap(function_pedal_booster_enabled);
 					}
 				}
 			}
@@ -553,17 +525,7 @@
 							//onboardLed_blue_on();
 							can_tx(&uds_parameter_request_msg_header, uds_parameter_request_msg_data); //transmit the request
 						}else{ //<0xff reqId means special value that we use to get particular values
-							float nativeVal=getNativeParam((uint8_t)uds_params_array[function_is_diesel_enabled][dashboardPageIndex].udsParamId[currentParamElementSelection]);
-							if(maxHold_enabled){
-								if(isnan(dashboardParamCouple[currentParamElementSelection])){
-									dashboardParamMaxHold[currentParamElementSelection]=nativeVal; //first update after navigation: reset max hold
-								}else if(nativeVal > dashboardParamMaxHold[currentParamElementSelection]){
-									dashboardParamMaxHold[currentParamElementSelection]=nativeVal; //new maximum found
-								}
-								dashboardParamCouple[currentParamElementSelection]=dashboardParamMaxHold[currentParamElementSelection];
-							}else{
-								dashboardParamCouple[currentParamElementSelection]=nativeVal;
-							}
+							dashboardParamCouple[currentParamElementSelection]=getNativeParam((uint8_t)uds_params_array[function_is_diesel_enabled][dashboardPageIndex].udsParamId[currentParamElementSelection]);//aquire param in a variabile
 							sendDashboardPageToSlaveBaccable();  //Send params to BH board
 						}
 					}
@@ -622,15 +584,6 @@
 			case 6: //6=Race Map
 				if(currentSchizzaforteMap=='R') return 0; //map applied
 				break;
-			case 7: //7=Hybrid Align: N map for A/N/D, Race map for Race
-				if(currentDNAmode==0x30){ //Race
-					if(currentSchizzaforteMap=='R') return 0; //map applied
-				}else{ //A, N, D → Natural map
-					if(currentSchizzaforteMap=='N') return 0; //map applied
-				}
-				break;
-			case 8: //8=Kids Limiter: throttle override, map shall be bypass
-				if(currentSchizzaforteMap=='B') return 0; //map applied
 			default:
 				//return 1; //not correctly applied
 		}
@@ -652,10 +605,10 @@
 			case 3:
 				if(function_clear_faults_enabled==1){
 					if(clearFaultsRequest>0){
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "WAIT...     ", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "ATTENDI...  ", 12);
 						commandsMenuEnabled=0; //disable menu movement
 					}else{
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "CLEAR FAULTS", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "CANC. ERRORI", 12);
 						commandsMenuEnabled=1; //enable menu movement
 					}
 				}
@@ -672,7 +625,7 @@
 			case 5: //dyno
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','U','T','O',' ','F','E','R','M','A',' ',' '};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
@@ -682,14 +635,14 @@
 			case 7: //front brake
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','U','T','O',' ','F','E','R','M','A',' ',' '};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
 
 				if(printEnableDyno>0){
 					printEnableDyno--;
-					uint8_t enableDynoMsg[12]={BhBusIDparamString,'E','N','A','B','L','E',' ','D','Y','N','O'};
+					uint8_t enableDynoMsg[12]={BhBusIDparamString,'A','T','T','I','V','A',' ','D','Y','N','O'};
 					addToUARTSendQueue(enableDynoMsg, 12);//print message "Enable Dyno"
 					return;
 				}
@@ -697,23 +650,23 @@
 				if(front_brake_forced==0){
 					//update text {'F','r','o','n','t',' ','B','r','a','k','e',' ','N','o','r','m','a','l' },
 					dashboard_main_menu_array[main_dashboardPageIndex][0]='F';
-					dashboard_main_menu_array[main_dashboardPageIndex][1]='r';
-					dashboard_main_menu_array[main_dashboardPageIndex][2]='o';
-					dashboard_main_menu_array[main_dashboardPageIndex][3]='n';
-					dashboard_main_menu_array[main_dashboardPageIndex][4]='t';
+					dashboard_main_menu_array[main_dashboardPageIndex][1]='R';
+					dashboard_main_menu_array[main_dashboardPageIndex][2]='E';
+					dashboard_main_menu_array[main_dashboardPageIndex][3]='N';
+					dashboard_main_menu_array[main_dashboardPageIndex][4]='I';
 					dashboard_main_menu_array[main_dashboardPageIndex][5]=' ';
-					dashboard_main_menu_array[main_dashboardPageIndex][6]='B';
-					dashboard_main_menu_array[main_dashboardPageIndex][7]='r';
-					dashboard_main_menu_array[main_dashboardPageIndex][8]='a';
-					dashboard_main_menu_array[main_dashboardPageIndex][9]='k';
-					dashboard_main_menu_array[main_dashboardPageIndex][10]='e';
+					dashboard_main_menu_array[main_dashboardPageIndex][6]='A';
+					dashboard_main_menu_array[main_dashboardPageIndex][7]='N';
+					dashboard_main_menu_array[main_dashboardPageIndex][8]='T';
+					dashboard_main_menu_array[main_dashboardPageIndex][9]='.';
+					dashboard_main_menu_array[main_dashboardPageIndex][10]=' ';
 					dashboard_main_menu_array[main_dashboardPageIndex][11]=' ';
 					dashboard_main_menu_array[main_dashboardPageIndex][12]='N'; //normal
-					dashboard_main_menu_array[main_dashboardPageIndex][13]='o'; //
-					dashboard_main_menu_array[main_dashboardPageIndex][14]='r'; //
-					dashboard_main_menu_array[main_dashboardPageIndex][15]='m';
-					dashboard_main_menu_array[main_dashboardPageIndex][16]='a';
-					dashboard_main_menu_array[main_dashboardPageIndex][17]='l';
+					dashboard_main_menu_array[main_dashboardPageIndex][13]='O'; //
+					dashboard_main_menu_array[main_dashboardPageIndex][14]='R'; //
+					dashboard_main_menu_array[main_dashboardPageIndex][15]='M';
+					dashboard_main_menu_array[main_dashboardPageIndex][16]='A';
+					dashboard_main_menu_array[main_dashboardPageIndex][17]='L';
 				}else{
 					if(launch_assist_enabled==1){
 						if(torque>50){ //assist active and torque greather than minimum threshold. the minimum thr allows to view the menu "...assist" before the following string is printed
@@ -721,11 +674,11 @@
 
 							//show torque
 							dashboard_main_menu_array[main_dashboardPageIndex][0]='L';
-							dashboard_main_menu_array[main_dashboardPageIndex][1]='a';
-							dashboard_main_menu_array[main_dashboardPageIndex][2]='u';
-							dashboard_main_menu_array[main_dashboardPageIndex][3]='n';
-							dashboard_main_menu_array[main_dashboardPageIndex][4]='c';
-							dashboard_main_menu_array[main_dashboardPageIndex][5]='h';
+							dashboard_main_menu_array[main_dashboardPageIndex][1]='A';
+							dashboard_main_menu_array[main_dashboardPageIndex][2]='U';
+							dashboard_main_menu_array[main_dashboardPageIndex][3]='N';
+							dashboard_main_menu_array[main_dashboardPageIndex][4]='C';
+							dashboard_main_menu_array[main_dashboardPageIndex][5]='H';
 							dashboard_main_menu_array[main_dashboardPageIndex][6]=' ';
 
 							floatToStr(tmpfloatString,(float)torque,0,4);
@@ -767,59 +720,55 @@
 						}else{
 							//update text
 							dashboard_main_menu_array[main_dashboardPageIndex][0]='F';
-							dashboard_main_menu_array[main_dashboardPageIndex][1]='r';
-							dashboard_main_menu_array[main_dashboardPageIndex][2]='o';
-							dashboard_main_menu_array[main_dashboardPageIndex][3]='n';
-							dashboard_main_menu_array[main_dashboardPageIndex][4]='t';
+							dashboard_main_menu_array[main_dashboardPageIndex][1]='R';
+							dashboard_main_menu_array[main_dashboardPageIndex][2]='E';
+							dashboard_main_menu_array[main_dashboardPageIndex][3]='N';
+							dashboard_main_menu_array[main_dashboardPageIndex][4]='I';
 							dashboard_main_menu_array[main_dashboardPageIndex][5]=' ';
-							dashboard_main_menu_array[main_dashboardPageIndex][6]='B';
-							dashboard_main_menu_array[main_dashboardPageIndex][7]='r';
-							dashboard_main_menu_array[main_dashboardPageIndex][8]='a';
-							dashboard_main_menu_array[main_dashboardPageIndex][9]='k';
-							dashboard_main_menu_array[main_dashboardPageIndex][10]='e';
+							dashboard_main_menu_array[main_dashboardPageIndex][6]='A';
+							dashboard_main_menu_array[main_dashboardPageIndex][7]='N';
+							dashboard_main_menu_array[main_dashboardPageIndex][8]='T';
+							dashboard_main_menu_array[main_dashboardPageIndex][9]='.';
+							dashboard_main_menu_array[main_dashboardPageIndex][10]=' ';
 							dashboard_main_menu_array[main_dashboardPageIndex][11]=' ';
-							dashboard_main_menu_array[main_dashboardPageIndex][12]='A'; //assist (launch control)
-							dashboard_main_menu_array[main_dashboardPageIndex][13]='s'; //
-							dashboard_main_menu_array[main_dashboardPageIndex][14]='s'; //
-							dashboard_main_menu_array[main_dashboardPageIndex][15]='i';
-							dashboard_main_menu_array[main_dashboardPageIndex][16]='s';
-							dashboard_main_menu_array[main_dashboardPageIndex][17]='t';
+							dashboard_main_menu_array[main_dashboardPageIndex][12]='L'; //assist (launch control)
+							dashboard_main_menu_array[main_dashboardPageIndex][13]='A'; //
+							dashboard_main_menu_array[main_dashboardPageIndex][14]='U'; //
+							dashboard_main_menu_array[main_dashboardPageIndex][15]='N';
+							dashboard_main_menu_array[main_dashboardPageIndex][16]='C';
+							dashboard_main_menu_array[main_dashboardPageIndex][17]='H';
 						}
 					}else{ //launch assist not enabled
 						//update text
 						dashboard_main_menu_array[main_dashboardPageIndex][0]='F';
-						dashboard_main_menu_array[main_dashboardPageIndex][1]='r';
-						dashboard_main_menu_array[main_dashboardPageIndex][2]='o';
-						dashboard_main_menu_array[main_dashboardPageIndex][3]='n';
-						dashboard_main_menu_array[main_dashboardPageIndex][4]='t';
+						dashboard_main_menu_array[main_dashboardPageIndex][1]='R';
+						dashboard_main_menu_array[main_dashboardPageIndex][2]='E';
+						dashboard_main_menu_array[main_dashboardPageIndex][3]='N';
+						dashboard_main_menu_array[main_dashboardPageIndex][4]='I';
 						dashboard_main_menu_array[main_dashboardPageIndex][5]=' ';
-						dashboard_main_menu_array[main_dashboardPageIndex][6]='B';
-						dashboard_main_menu_array[main_dashboardPageIndex][7]='r';
-						dashboard_main_menu_array[main_dashboardPageIndex][8]='a';
-						dashboard_main_menu_array[main_dashboardPageIndex][9]='k';
-						dashboard_main_menu_array[main_dashboardPageIndex][10]='e';
-						dashboard_main_menu_array[main_dashboardPageIndex][11]=' ';
-						dashboard_main_menu_array[main_dashboardPageIndex][12]='F'; //forced
-						dashboard_main_menu_array[main_dashboardPageIndex][13]='o'; //
-						dashboard_main_menu_array[main_dashboardPageIndex][14]='r'; //
-						dashboard_main_menu_array[main_dashboardPageIndex][15]='c';
-						dashboard_main_menu_array[main_dashboardPageIndex][16]='e';
-						dashboard_main_menu_array[main_dashboardPageIndex][17]='d';
+						dashboard_main_menu_array[main_dashboardPageIndex][6]='A';
+						dashboard_main_menu_array[main_dashboardPageIndex][7]='N';
+						dashboard_main_menu_array[main_dashboardPageIndex][8]='T';
+						dashboard_main_menu_array[main_dashboardPageIndex][9]='.';
+						dashboard_main_menu_array[main_dashboardPageIndex][10]=' ';
+						dashboard_main_menu_array[main_dashboardPageIndex][11]='F';
+						dashboard_main_menu_array[main_dashboardPageIndex][12]='O'; //forced
+						dashboard_main_menu_array[main_dashboardPageIndex][13]='R'; //
+						dashboard_main_menu_array[main_dashboardPageIndex][14]='Z'; //
+						dashboard_main_menu_array[main_dashboardPageIndex][15]='A';
+						dashboard_main_menu_array[main_dashboardPageIndex][16]='T';
+						dashboard_main_menu_array[main_dashboardPageIndex][17]='I';
 					}
 				}
 				break;
 			case 8: //4wd
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','U','T','O',' ','F','E','R','M','A',' ',' '};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
 				//nothing to do
-				break;
-			case 15: //Max Hold: update ON/OFF text
-				dashboard_main_menu_array[15][10] = maxHold_enabled ? 'N' : 'F';
-				dashboard_main_menu_array[15][11] = maxHold_enabled ? ' ' : 'F';
 				break;
 			default:
 				//nothing to do
@@ -926,22 +875,22 @@
 			case 18: //{'Ø',' ',' ','D','i','e','s','e','l',' ',' ',' ','P','a','r','a','m','s'},
 				if(function_is_diesel_enabled){
 					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='D';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='s';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='l';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='I';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='E';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='S';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='E';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='L';
 					dashboard_setup_menu_array[setup_dashboardPageIndex][9] =' ';
 					dashboard_setup_menu_array[setup_dashboardPageIndex][10]=' ';
 				}else{
-					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='G';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='a';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='s';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='o';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='l';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][9] ='n';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][10]='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='B';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='E';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='N';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='Z';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='I';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='N';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][9] ='A';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][10]=' ';
 				}
 				break;
 			case 19: //odometer blink
@@ -1020,26 +969,6 @@
 						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='M';
 						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='a';
 						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='p';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
-						break;
-					case 7: //Hybrid Align
-						dashboard_setup_menu_array[setup_dashboardPageIndex][10]='.';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][11]=' ';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][12]='H';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][13]='y';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='b';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='r';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='i';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='d';
-						break;
-					case 8: //Kids Limiter
-						dashboard_setup_menu_array[setup_dashboardPageIndex][10]='.';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][11]=' ';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][12]='K';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][13]='i';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='d';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='s';
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]=' ';
 						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
 						break;
 					default: //we will never end here
@@ -1127,16 +1056,16 @@
 			case 0: //{'S','A','V','E','&','E','X','I','T',},
 				uartTxMsg[1]='S';
 				uartTxMsg[2]='A';
-				uartTxMsg[3]='V';
-				uartTxMsg[4]='E';
-				uartTxMsg[5]=' ';
-				uartTxMsg[6]='&';
-				uartTxMsg[7]=' ';
-				uartTxMsg[8]='E';
-				uartTxMsg[9]='X';
-				uartTxMsg[10]='I';
-				uartTxMsg[11]='T';
-				uartTxMsg[12]=0;
+				uartTxMsg[3]='L';
+				uartTxMsg[4]='V';
+				uartTxMsg[5]='A';
+				uartTxMsg[6]=' ';
+				uartTxMsg[7]='&';
+				uartTxMsg[8]=' ';
+				uartTxMsg[9]='E';
+				uartTxMsg[10]='S';
+				uartTxMsg[11]='C';
+				uartTxMsg[12]='I';
 				uartTxMsg[13]=0;
 				uartTxMsg[14]=0;
 				uartTxMsg[15]=0;
@@ -1865,7 +1794,7 @@
 				}
 				break;
 			case 20: //PEDAL_BOOSTER_ENABLED
-				if(tmpParam>8){
+				if(tmpParam>6){
 					#if defined(PEDAL_BOOSTER_ENABLED)
 						return PEDAL_BOOSTER_ENABLED;
 					#else
@@ -1998,25 +1927,6 @@
 	    return index;
 	}
 
-	// Event-driven max hold update for native CAN parameters.
-	// Called directly at the extraction point of each native CAN variable,
-	// so peaks are captured at CAN bus rate (e.g. every 10ms) rather than at the 500ms display cycle.
-	// Only updates dashboardParamMaxHold; display (dashboardParamCouple) is still refreshed at 500ms.
-	// Fast-returns if max hold is inactive or the params view is not shown.
-	void nativeMaxHoldUpdate(uint8_t paramId){
-		if(!maxHold_enabled || dashboard_menu_indent_level!=1 || main_dashboardPageIndex!=1 || !baccableDashboardMenuVisible) return;
-		for(uint8_t sel=0; sel<2; sel++){
-			if(uds_params_array[function_is_diesel_enabled][dashboardPageIndex].udsParamId[sel]==paramId){
-				if(!isnan(dashboardParamCouple[sel])){ //only after the 500ms cycle has set the initial value
-					float value=getNativeParam(paramId);
-					if(value > dashboardParamMaxHold[sel]){
-						dashboardParamMaxHold[sel]=value;
-					}
-				}
-				break;
-			}
-		}
-	}
 
 
 #endif

@@ -38,5 +38,4 @@
 	uint8_t getParamIndexFromReqId(uint32_t searchedReqId);
 	uint8_t getNextVisibleParam(uint8_t curIndex);
 	uint8_t getPreviousVisibleParam(uint8_t curIndex);
-	void nativeMaxHoldUpdate(uint8_t paramId);
 #endif /* INC_FUNCTIONS_C1BACCABLE_H_ */

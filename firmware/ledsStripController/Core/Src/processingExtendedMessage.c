@@ -80,16 +80,7 @@ void processingExtendedMessage(){
 						currentParamElementSelection=0; //single param
 					}
 
-					if(maxHold_enabled){
-						if(isnan(dashboardParamCouple[currentParamElementSelection])){
-							dashboardParamMaxHold[currentParamElementSelection]=tmpVal2; //first update after navigation: reset max hold
-						}else if(tmpVal2 > dashboardParamMaxHold[currentParamElementSelection]){
-							dashboardParamMaxHold[currentParamElementSelection]=tmpVal2; //new maximum found
-						}
-						dashboardParamCouple[currentParamElementSelection]=dashboardParamMaxHold[currentParamElementSelection];
-					}else{
-						dashboardParamCouple[currentParamElementSelection]=tmpVal2; //normal behavior
-					}
+					dashboardParamCouple[currentParamElementSelection]=tmpVal2;//aquire param in a variabile
 					sendDashboardPageToSlaveBaccable();//send parameters to BH
 				}
 			}

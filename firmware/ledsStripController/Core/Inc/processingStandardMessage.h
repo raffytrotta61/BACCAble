@@ -16,9 +16,6 @@
 	#include "processingMessage0x000002FA.h"
 	#include "processingMessage0x00000384.h"
 
-	#if defined(C1baccable)
-		#include "functions_C1baccable.h"
-	#endif
 	#if defined(C2baccable)
 		#include "functions_C2baccable.h"
 	#endif

@@ -1,7 +1,6 @@
 #include "uds_parameters.h"
 
 	float dashboardParamCouple[2];
-	float dashboardParamMaxHold[2]; // stores max value for each displayed param (used by Max Hold feature)
 
 
 	uint8_t shownParamsArray[240];
@@ -77,58 +76,58 @@
 
 				},{ //diesel
 						{.name="PWR $3.0fCV $3.0fNm",				.udsParamId={1,		2		}}, //param couple: PWR and Torque
-						{.name="OIL $1.1fbar W.$3.0f" "\xB0" "C",	.udsParamId={0,		68		}}, //param couple: OIL pressure and Water Temp.
-						{.name="OIL $1.1fbar O.$3.0f" "\xB0" "C",	.udsParamId={0,		5		}}, //param couple: OIL pressure and Oil Temp.
-						{.name="OIL $3.0f" "\xB0" "C W.$3.0f" "\xB0" "C",	.udsParamId={5,		68		}}, //param couple: OIL temp. and Water Temp.
-						{.name="OIL $2.1fmm Qu.$3.0f%",				.udsParamId={64,	63		}}, //param couple: OIL level and Oil Quality
-						{.name="BAT $3.0f% $2.1fA",					.udsParamId={3,		4		}}, //param couple: BAT State Of Charge and current
-						{.name="BAT $2.2fV $2.1fA",					.udsParamId={62,	4		}}, //param couple: BAT voltage and current
-						{.name="DPF $2.2f% $2.2f" "\xB0" "C",		.udsParamId={55,	56		}}, //param couple: DPF clogging percentage and temperature
-						{.name="REGEN $2.1f% $3.0f" "\xB0" "C",		.udsParamId={57,	56		}}, //param couple: DPF regeneration progress percentage and temperature
-						{.name="PWR: $3.2fCV   ",					.udsParamId={1,		1		}}, //Power
-						{.name="TORQUE: $3.2fNm",					.udsParamId={2,		2		}}, //Torque
-						{.name="DPF: $3.2f%    ",					.udsParamId={55,	55		}}, //DPF clogging percentage
-						{.name="DPF: $3.2f" "\xB0" "C   ",			.udsParamId={56,	56		}}, //DPF Temperature
-						{.name="DPF REGEN: $3.2f%",					.udsParamId={57,	57		}}, //DPF regeneration progress percentage
-						{.name="REGEN: $enum   ",					.udsParamId={8,		8		}}, //DPF regeneration type
-						{.name="LAST REGEN:$5.0fkm",				.udsParamId={58,	58		}}, //DPF last regeneration distance in km
-						{.name="TOT REGEN: $5.0f",					.udsParamId={59,	59		}}, //DPF total number of regenerations
-						{.name="MEAN REGEN:$5.0fkm",				.udsParamId={60,	60		}}, //DPF mean regeneration distance in km
-						{.name="MEAN REGEN:$3.0fmin",				.udsParamId={61,	61		}}, //DPF mean regeneration duration in minutes
-						{.name="BAT $2.2fV     ",					.udsParamId={62,	62		}}, //Battery Voltage
-						{.name="BAT $3.0f%     ",					.udsParamId={3,		3		}}, //Battery State Of Charge percentage
-						{.name="BAT $3.1fA     ",					.udsParamId={4,		4		}}, //Battery current
-						{.name="OIL QUALY: $3.0f%",					.udsParamId={63,	63		}}, //Oil Quality
-						{.name="OIL: $3.0f" "\xB0" "C   ",			.udsParamId={5,		5		}}, //Oil temperature
-						{.name="OIL: $2.2fbar  ",					.udsParamId={0,		0		}}, //Oil pressure
-						{.name="OIL: $3.2fmm   ",					.udsParamId={64,	64		}}, //Oil quantity in mm
-						{.name="ADBLUE: $3.2fL ",					.udsParamId={65,	65		}}, //Adblue quantity in Liters
-						{.name="ADBLUE: $3.2f% ",					.udsParamId={66,	66		}}, //Adblue quantity in percentage
-						{.name="GEARBOX: $3.2f" "\xB0" "C",			.udsParamId={33,	33		}}, //gearbox temperature
-						{.name="EXHAUST GAS:$4.0f" "\xB0" "C",		.udsParamId={67,	67		}}, //exhaust gas temperature (turbo input)
-						{.name="CUR. GEAR: $enum",					.udsParamId={6,		6		}}, //current gear
-						{.name="WATER: $3.0f" "\xB0" "C ",			.udsParamId={68,	68		}}, //water temperature
-						{.name="EGR CMD:$2.2f% ",					.udsParamId={73,	73		}}, //EGR command
-						{.name="EGR:    $2.2f% ",					.udsParamId={74,	74		}}, //EGR status
-						{.name="TURBO REQ: $2.1fbar",				.udsParamId={76,	76		}}, //Turbo Request pressure
-						{.name="TURBO REQ: $2.2f%",					.udsParamId={77,	77		}}, //Turbo Request percentage
-						{.name="TURBO: $2.2f" "\xB0" "C ",			.udsParamId={78,	78		}}, //Turbo temperature
-						{.name="TURBO: $2.2fbar",					.udsParamId={79,	79		}}, //Turbo pressure
-						{.name="TURBO: $2.2f%  ",					.udsParamId={80,	80		}}, //Turbo percentage
-						{.name="BOOST REQ.:$2.1fbar",				.udsParamId={81,	81		}}, //Boost Request pressure
-						{.name="BOOST: $1.2fV  ",					.udsParamId={82,	82		}}, //Boost sensor voltage
-						{.name="RAIL: $5.2fbar ",					.udsParamId={83,	83		}}, //Rail pressure
-						{.name="DIESEL: $2.2f" "\xB0" "C",			.udsParamId={84,	84		}}, //Diesel temperature
+						{.name="OLIO $1.1fbar|ACQUA $3.0f""\xB0""C",	.udsParamId={0,		68		}}, //param couple: OIL pressure and Water Temp.
+						{.name="OLIO $1.1fbar|$3.0f""\xB0""C",	.udsParamId={0,		5		}}, //param couple: OIL pressure and Oil Temp.
+						{.name="OLIO $3.0f""\xB0""C|ACQUA $3.0f""\xB0""C",	.udsParamId={5,		68		}}, //param couple: OIL temp. and Water Temp.
+						{.name="OLIO $2.1fmm|$3.0f%",				.udsParamId={64,	63		}}, //param couple: OIL level and Oil Quality
+						{.name="BATTERIA $3.0f%|$2.1fA",					.udsParamId={3,		4		}}, //param couple: BAT State Of Charge and current
+						{.name="BATTERIA $2.2fV|$2.1fA",					.udsParamId={62,	4		}}, //param couple: BAT voltage and current
+						{.name="DPF $2.2f%|$2.2f""\xB0""C",		.udsParamId={55,	56		}}, //param couple: DPF clogging percentage and temperature
+						{.name="RIGEN $2.1f%|$3.0f""\xB0""C",		.udsParamId={57,	56		}}, //param couple: DPF regeneration progress percentage and temperature
+						{.name="POTENZA $3.2fCV",					.udsParamId={1,		1		}}, //Power
+						{.name="COPPIA $3.2fNm",					.udsParamId={2,		2		}}, //Torque
+						{.name="DPF $3.2f%",					.udsParamId={55,	55		}}, //DPF clogging percentage
+						{.name="DPF $3.2f""\xB0""C",			.udsParamId={56,	56		}}, //DPF Temperature
+						{.name="RIGEN DPF $3.2f%",					.udsParamId={57,	57		}}, //DPF regeneration progress percentage
+						{.name="RIGEN $enum",					.udsParamId={8,		8		}}, //DPF regeneration type
+						{.name="ULTIMA RIGEN $5.0fkm",				.udsParamId={58,	58		}}, //DPF last regeneration distance in km
+						{.name="RIGEN TOT $5.0f",					.udsParamId={59,	59		}}, //DPF total number of regenerations
+						{.name="MEDIA RIGEN $5.0fkm",				.udsParamId={60,	60		}}, //DPF mean regeneration distance in km
+						{.name="MEDIA RIGEN $3.0fmin",				.udsParamId={61,	61		}}, //DPF mean regeneration duration in minutes
+						{.name="BATTERIA $2.2fV",					.udsParamId={62,	62		}}, //Battery Voltage
+						{.name="BATTERIA $3.0f%",					.udsParamId={3,		3		}}, //Battery State Of Charge percentage
+						{.name="BATTERIA $3.1fA",					.udsParamId={4,		4		}}, //Battery current
+						{.name="QUAL. OLIO $3.0f%",					.udsParamId={63,	63		}}, //Oil Quality
+						{.name="OLIO $3.0f""\xB0""C",			.udsParamId={5,		5		}}, //Oil temperature
+						{.name="OLIO $2.2fbar",					.udsParamId={0,		0		}}, //Oil pressure
+						{.name="OLIO $3.2fmm",					.udsParamId={64,	64		}}, //Oil quantity in mm
+						{.name="ADBLUE $3.2fL",					.udsParamId={65,	65		}}, //Adblue quantity in Liters
+						{.name="ADBLUE $3.2f%",					.udsParamId={66,	66		}}, //Adblue quantity in percentage
+						{.name="CAMBIO $3.2f""\xB0""C",			.udsParamId={33,	33		}}, //gearbox temperature
+						{.name="SCARICO $4.0f""\xB0""C",		.udsParamId={67,	67		}}, //exhaust gas temperature (turbo input)
+						{.name="MARCIA $enum",					.udsParamId={6,		6		}}, //current gear
+						{.name="ACQUA $3.0f""\xB0""C ",			.udsParamId={68,	68		}}, //water temperature
+						{.name="EGR CMD $2.2f%",					.udsParamId={73,	73		}}, //EGR command
+						{.name="EGR $2.2f%",					.udsParamId={74,	74		}}, //EGR status
+						{.name="TURBO REQ $2.1fbar",				.udsParamId={76,	76		}}, //Turbo Request pressure
+						{.name="TURBO REQ $2.2f%",					.udsParamId={77,	77		}}, //Turbo Request percentage
+						{.name="TURBO $2.2f""\xB0""C",			.udsParamId={78,	78		}}, //Turbo temperature
+						{.name="TURBO $2.2fbar",					.udsParamId={79,	79		}}, //Turbo pressure
+						{.name="TURBO $2.2f%",					.udsParamId={80,	80		}}, //Turbo percentage
+						{.name="BOOST REQ. $2.1fbar",				.udsParamId={81,	81		}}, //Boost Request pressure
+						{.name="BOOST $1.2fV",					.udsParamId={82,	82		}}, //Boost sensor voltage
+						{.name="RAIL $5.2fbar ",					.udsParamId={83,	83		}}, //Rail pressure
+						{.name="DIESEL $2.2f""\xB0""C",			.udsParamId={84,	84		}}, //Diesel temperature
 						{.name="ODOM.LAST: $5.0fkm",				.udsParamId={85,	85		}}, //Distance in km since last odometer reset
-						{.name="AIR COND.:$2.2fbar",				.udsParamId={86,	86		}}, //Air conditioner pressure
-						{.name="FUEL CONS.:$1.2fL/h",				.udsParamId={87,	87		}}, //Fuel Consume
-						{.name="DEBIMETER:$3.2f" "\xB0" "C",		.udsParamId={88,	88		}}, //Debimeter temperature
-						{.name="SPEED:$3.2fkm/h",					.udsParamId={7,		7		}}, //speed
-						{.name="Seatbelt Alarm:$enum",				.udsParamId={13,	13		}}, //Seatbelt Alarm Status
-						{.name="0-100Km/h:  $2.2fs",				.udsParamId={9,		9		}}, //0-100km/h Statistic
-						{.name="100-200Km/h:$2.2fs",				.udsParamId={10,	10		}}, //100-200km/h Statistic
-						{.name="Best  0-100:$2.2fs",				.udsParamId={11,	11		}}, //0-100km/h Best Statistic
-						{.name="Best100-200:$2.2fs",				.udsParamId={12,	12		}}, //0-100km/h Best Statistic
+						{.name="ARIA COND. $2.2fbar",				.udsParamId={86,	86		}}, //Air conditioner pressure
+						{.name="CONSUMO $1.2fl/h",				.udsParamId={87,	87		}}, //Fuel Consume
+						{.name="DEBIMETRO $3.2f""\xB0""C",		.udsParamId={88,	88		}}, //Debimeter temperature
+						{.name="VELOCITA' $3.2fkm/h",					.udsParamId={7,		7		}}, //speed
+						{.name="ALLARME CINTURE $enum",				.udsParamId={13,	13		}}, //Seatbelt Alarm Status
+						{.name="0-100Km/h $2.2fs",				.udsParamId={9,		9		}}, //0-100km/h Statistic
+						{.name="100-200Km/h $2.2fs",				.udsParamId={10,	10		}}, //100-200km/h Statistic
+						{.name="MIGLIORE 0-100 $2.2fs",				.udsParamId={11,	11		}}, //0-100km/h Best Statistic
+						{.name="MIGLIORE 100-200 $2.2fs",				.udsParamId={12,	12		}}, //0-100km/h Best Statistic
 						{.name="DRIVE STYLE: $enum",				.udsParamId={15,	15		}}, //Drive Style
 						{.name="Pedal Map: $enum",					.udsParamId={17,	17		}}, //selected Pedal Map
 //						{.name="RAM: $5.0fB",						.udsParamId={16,	16		}}, //Free RAM
@@ -264,7 +263,7 @@
 	const uint8_t gearArray[11]={'N','1','2','3','4','5','6','R','7','8','9'};
 
 	const char* speedStatisticEnumStrings[] = {
-		"MISSED ",
-		"GO     ",
+		"MANCATO ",
+		"VAI     ",
 		"?      "
 	};

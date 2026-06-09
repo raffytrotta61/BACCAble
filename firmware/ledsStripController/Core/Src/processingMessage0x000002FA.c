@@ -493,16 +493,16 @@ void processingMessage0x000002FA(){
 										_4wd_disabled=0;
 										//update text
 										dashboard_main_menu_array[main_dashboardPageIndex][4]=' '; //enabled
-										dashboard_main_menu_array[main_dashboardPageIndex][5]='E';
+										dashboard_main_menu_array[main_dashboardPageIndex][5]='O';
 										dashboard_main_menu_array[main_dashboardPageIndex][6]='n';
 										commandsMenuEnabled=1;//enable menu commands
 									}else{
 										if(carSteadyCounter>=100){ //car is steady since at least one second
 											_4wd_disabled=4;
 											//update text
-											dashboard_main_menu_array[main_dashboardPageIndex][4]='D'; //disabled
-											dashboard_main_menu_array[main_dashboardPageIndex][5]='i';
-											dashboard_main_menu_array[main_dashboardPageIndex][6]='s';
+											dashboard_main_menu_array[main_dashboardPageIndex][4]='O'; //disabled
+											dashboard_main_menu_array[main_dashboardPageIndex][5]='f';
+											dashboard_main_menu_array[main_dashboardPageIndex][6]='f';
 											commandsMenuEnabled=0;//disable menu commands
 										}else{
 											printStopTheCar=2;//print message "stop the car"
@@ -542,15 +542,6 @@ void processingMessage0x000002FA(){
 									break;
 								case 14: //reset statistics
 									resetStatisticsOnFlash();
-									break;
-								case 15: //Max Hold toggle
-									maxHold_enabled=!maxHold_enabled;
-									if(maxHold_enabled){
-										//force fresh start: next parameter update will initialise max hold from scratch
-										dashboardParamCouple[0]=NAN;
-										dashboardParamCouple[1]=NAN;
-									}
-									break;
 								default:
 									break;
 							}
@@ -673,15 +664,9 @@ void processingMessage0x000002FA(){
 											break;
 										case 20: //{'Ø',' ',' ','P','e','d','a','l',' ','B','o','o','s','t','e','r',' ',' '},
 											function_pedal_booster_enabled++;
-											if (function_pedal_booster_enabled>8) function_pedal_booster_enabled=0; //rotative selection 0=disabled, 1=auto, 2=Bypass, 3=All Weather map, 4=Natural Map, 5=Dynamic Map, 6=Race Map, 7=Hybrid Align, 8=Kids Limiter
+											if (function_pedal_booster_enabled>6) function_pedal_booster_enabled=0; //rotative selection 0=disabled, 1=auto, 2=Bypass, 3=All Weather map, 4=Natural Map, 5=Dynamic Map, 6=Race Map
 
 											if(function_pedal_booster_enabled==0) setSchizzaforteMap(2); //set bypass map, before to stop to send messages to schizzaForte
-										if(function_pedal_booster_enabled==8){ //Kids Limiter: set A map with minimum pedal power at selection
-											int8_t saved_pedal_map_power=pedal_map_power;
-											pedal_map_power=-10; //force minimum power
-											setSchizzaforteMap(3); //A map
-											pedal_map_power=saved_pedal_map_power; //restore user setting
-										}
 
 											//Now let's inform the C2 and BH Baccable
 											uint8_t tmpArr1[3]={C2_Bh_BusID,C2_Bh_cmdSetPedalBoostStatus,function_pedal_booster_enabled};
