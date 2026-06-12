@@ -11,7 +11,7 @@
 	#ifndef BUILD_VERSION //optional compile time define with -D, default: undefined
 		#define BUILD_VERSION "V.3.2.4"  //versioning rule: first digit major change, second digit minor change (like new feature), third digit bug fix or cosmetics
 	#endif
-	#define _FW_VERSION "BACCABLE " BUILD_VERSION
+	#define _FW_VERSION "BACCABLE IT" BUILD_VERSION
 
 
 	// force print
