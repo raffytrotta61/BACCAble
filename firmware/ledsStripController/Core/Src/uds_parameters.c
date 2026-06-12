@@ -103,7 +103,7 @@
 						{.name="OLIO $3.2fmm",					.udsParamId={64,	64		}}, //Oil quantity in mm
 						{.name="ADBLUE $3.2fL",					.udsParamId={65,	65		}}, //Adblue quantity in Liters
 						{.name="ADBLUE $3.2f%",					.udsParamId={66,	66		}}, //Adblue quantity in percentage
-						{.name="CAMBIO $3.2f""\xB0""C",			.udsParamId={33,	33		}}, //gearbox temperature
+						{.name="CAMBIO $3.0f""\xB0""C",			.udsParamId={33,	33		}}, //gearbox temperature
 						{.name="SCARICO $4.0f""\xB0""C",		.udsParamId={67,	67		}}, //exhaust gas temperature (turbo input)
 						{.name="MARCIA $enum",					.udsParamId={6,		6		}}, //current gear
 						{.name="ACQUA $3.0f""\xB0""C ",			.udsParamId={68,	68		}}, //water temperature
