@@ -77,60 +77,60 @@
 
 				},{ //diesel
 						{.name="PWR $3.0fCV $3.0fNm",				.udsParamId={1,		2		}}, //param couple: PWR and Torque
-						{.name="OIL $1.1fbar W.$3.0f" "\xB0" "C",	.udsParamId={0,		68		}}, //param couple: OIL pressure and Water Temp.
-						{.name="OIL $1.1fbar O.$3.0f" "\xB0" "C",	.udsParamId={0,		5		}}, //param couple: OIL pressure and Oil Temp.
-						{.name="OIL $3.0f" "\xB0" "C W.$3.0f" "\xB0" "C",	.udsParamId={5,		68		}}, //param couple: OIL temp. and Water Temp.
-						{.name="OIL $2.1fmm Qu.$3.0f%",				.udsParamId={64,	63		}}, //param couple: OIL level and Oil Quality
-						{.name="BAT $3.0f% $3.1fA",					.udsParamId={21,	4		}}, //param couple: BAT State Of Charge and current
-						{.name="BAT $2.2fV $3.1fA",					.udsParamId={62,	4		}}, //param couple: BAT voltage and current
-						{.name="DPF $2.2f% $2.2f" "\xB0" "C",		.udsParamId={55,	56		}}, //param couple: DPF clogging percentage and temperature
-						{.name="REGEN $2.1f% $3.0f" "\xB0" "C",		.udsParamId={57,	56		}}, //param couple: DPF regeneration progress percentage and temperature
-						{.name="PWR: $3.2fCV   ",					.udsParamId={1,		1		}}, //Power
-						{.name="TORQUE: $3.2fNm",					.udsParamId={2,		2		}}, //Torque
-						{.name="DPF: $3.2f%    ",					.udsParamId={55,	55		}}, //DPF clogging percentage
-						{.name="DPF: $3.2f" "\xB0" "C   ",			.udsParamId={56,	56		}}, //DPF Temperature
-						{.name="DPF REGEN: $3.2f%",					.udsParamId={57,	57		}}, //DPF regeneration progress percentage
-						{.name="REGEN: $enum   ",					.udsParamId={8,		8		}}, //DPF regeneration type
-						{.name="LAST REGEN:$5.0fkm",				.udsParamId={58,	58		}}, //DPF last regeneration distance in km
-						{.name="TOT REGEN: $5.0f",					.udsParamId={59,	59		}}, //DPF total number of regenerations
-						{.name="MEAN REGEN:$5.0fkm",				.udsParamId={60,	60		}}, //DPF mean regeneration distance in km
-						{.name="MEAN REGEN:$3.0fmin",				.udsParamId={61,	61		}}, //DPF mean regeneration duration in minutes
-						{.name="BAT $2.2fV     ",					.udsParamId={62,	62		}}, //Battery Voltage
-						{.name="BAT $3.0f%     ",					.udsParamId={21,	21		}}, //Battery State Of Charge percentage
-						{.name="BAT $3.1fA     ",					.udsParamId={4,		4		}}, //Battery current
-						{.name="OIL QUALY: $3.0f%",					.udsParamId={63,	63		}}, //Oil Quality
-						{.name="OIL: $3.0f" "\xB0" "C   ",			.udsParamId={5,		5		}}, //Oil temperature
-						{.name="OIL: $2.2fbar  ",					.udsParamId={0,		0		}}, //Oil pressure
-						{.name="OIL: $3.2fmm   ",					.udsParamId={64,	64		}}, //Oil quantity in mm
-						{.name="ADBLUE: $3.2fL ",					.udsParamId={65,	65		}}, //Adblue quantity in Liters
-						{.name="ADBLUE: $3.2f% ",					.udsParamId={66,	66		}}, //Adblue quantity in percentage
-						{.name="GEARBOX: $3.2f" "\xB0" "C",			.udsParamId={33,	33		}}, //gearbox temperature
-						{.name="EXHAUST GAS:$4.0f" "\xB0" "C",		.udsParamId={67,	67		}}, //exhaust gas temperature (turbo input)
-						{.name="CUR. GEAR: $enum",					.udsParamId={6,		6		}}, //current gear
-						{.name="WATER: $3.0f" "\xB0" "C ",			.udsParamId={68,	68		}}, //water temperature
-						{.name="EGR CMD:$2.2f% ",					.udsParamId={73,	73		}}, //EGR command
-						{.name="EGR:    $2.2f% ",					.udsParamId={74,	74		}}, //EGR status
-						{.name="TURBO REQ: $2.1fbar",				.udsParamId={76,	76		}}, //Turbo Request pressure
-						{.name="TURBO REQ: $2.2f%",					.udsParamId={77,	77		}}, //Turbo Request percentage
-						{.name="TURBO: $2.2f" "\xB0" "C ",			.udsParamId={78,	78		}}, //Turbo temperature
-						{.name="TURBO: $2.2fbar",					.udsParamId={79,	79		}}, //Turbo pressure
-						{.name="TURBO: $2.2f%  ",					.udsParamId={80,	80		}}, //Turbo percentage
-						{.name="BOOST REQ.:$2.1fbar",				.udsParamId={81,	81		}}, //Boost Request pressure
-						{.name="BOOST: $1.2fV  ",					.udsParamId={82,	82		}}, //Boost sensor voltage
-						{.name="RAIL: $5.2fbar ",					.udsParamId={83,	83		}}, //Rail pressure
-						{.name="DIESEL: $2.2f" "\xB0" "C",			.udsParamId={84,	84		}}, //Diesel temperature
-						{.name="ODOM.LAST: $5.0fkm",				.udsParamId={85,	85		}}, //Distance in km since last odometer reset
-						{.name="AIR COND.:$2.2fbar",				.udsParamId={86,	86		}}, //Air conditioner pressure
-						{.name="FUEL CONS.:$1.2fL/h",				.udsParamId={87,	87		}}, //Fuel Consume
-						{.name="DEBIMETER:$3.2f" "\xB0" "C",		.udsParamId={88,	88		}}, //Debimeter temperature
-						{.name="SPEED:$3.2fkm/h",					.udsParamId={7,		7		}}, //speed
-						{.name="Seatbelt Alarm:$enum",				.udsParamId={13,	13		}}, //Seatbelt Alarm Status
-						{.name="0-100Km/h:  $2.2fs",				.udsParamId={9,		9		}}, //0-100km/h Statistic
-						{.name="100-200Km/h:$2.2fs",				.udsParamId={10,	10		}}, //100-200km/h Statistic
-						{.name="Best  0-100:$2.2fs",				.udsParamId={11,	11		}}, //0-100km/h Best Statistic
-						{.name="Best100-200:$2.2fs",				.udsParamId={12,	12		}}, //0-100km/h Best Statistic
-						{.name="DRIVE STYLE: $enum",				.udsParamId={15,	15		}}, //Drive Style
-						{.name="Pedal Map: $enum",					.udsParamId={17,	17		}}, //selected Pedal Map
+						{.name="Olio $1.1f bar|Acqua $3.0f""\xB0""C",	.udsParamId={0,		68		}}, //param couple: OIL pressure and Water Temp.
+						{.name="Olio $1.1f bar|$3.0f""\xB0""C",	.udsParamId={0,		5		}}, //param couple: OIL pressure and Oil Temp.
+						{.name="Olio $3.0f""\xB0""C|Acqua $3.0f""\xB0""C",	.udsParamId={5,		68		}}, //param couple: OIL temp. and Water Temp.
+						{.name="Olio $2.1f mm|Qual. $3.0f %",				.udsParamId={64,	63		}}, //param couple: OIL level and Oil Quality
+						{.name="Batteria $3.0f %|$3.1f A",					.udsParamId={21,	4		}}, //param couple: BAT State Of Charge and current
+						{.name="Batteria $2.2f V|$3.1f A",					.udsParamId={62,	4		}}, //param couple: BAT voltage and current
+						{.name="DPF $2.2f %|$2.2f""\xB0""C",		.udsParamId={55,	56		}}, //param couple: DPF clogging percentage and temperature
+						{.name="Rigen $2.1f %|$3.0f""\xB0""C",		.udsParamId={57,	56		}}, //param couple: DPF regeneration progress percentage and temperature
+						{.name="Potenza: $3.2f CV   ",					.udsParamId={1,		1		}}, //Power
+						{.name="Coppia: $3.2f Nm",					.udsParamId={2,		2		}}, //Torque
+						{.name="DPF: $3.2f %",					.udsParamId={55,	55		}}, //DPF clogging percentage
+						{.name="DPF: $3.2f""\xB0""C",			.udsParamId={56,	56		}}, //DPF Temperature
+						{.name="Rigen. DPF: $3.2f %",					.udsParamId={57,	57		}}, //DPF regeneration progress percentage
+						{.name="Rigen.: $enum",					.udsParamId={8,		8		}}, //DPF regeneration type
+						{.name="Ultima Rigen.: $5.0f km",				.udsParamId={58,	58		}}, //DPF last regeneration distance in km
+						{.name="Tot. Rigen.: $5.0f",					.udsParamId={59,	59		}}, //DPF total number of regenerations
+						{.name="Media Rigen.: $5.0f km",				.udsParamId={60,	60		}}, //DPF mean regeneration distance in km
+						{.name="Media Rigen.: $3.0f min",				.udsParamId={61,	61		}}, //DPF mean regeneration duration in minutes
+						{.name="Batteria: $2.2f V",					.udsParamId={62,	62		}}, //Battery Voltage
+						{.name="Batteria: $3.0f %",					.udsParamId={21,	21		}}, //Battery State Of Charge percentage
+						{.name="Batteria: $3.1f A",					.udsParamId={4,		4		}}, //Battery current
+						{.name="Qual. Olio: $3.0f %",					.udsParamId={63,	63		}}, //Oil Quality
+						{.name="Olio: $3.0f""\xB0""C",			.udsParamId={5,		5		}}, //Oil temperature
+						{.name="Olio: $2.2f bar",					.udsParamId={0,		0		}}, //Oil pressure
+						{.name="Olio: $3.2f mm",					.udsParamId={64,	64		}}, //Oil quantity in mm
+						{.name="AdBlue: $3.2f L",					.udsParamId={65,	65		}}, //Adblue quantity in Liters
+						{.name="AdBlue: $3.2f %",					.udsParamId={66,	66		}}, //Adblue quantity in percentage
+						{.name="Cambio: $3.2f""\xB0""C",			.udsParamId={33,	33		}}, //gearbox temperature
+						{.name="Gas Scarico: $4.0f""\xB0""C",		.udsParamId={67,	67		}}, //exhaust gas temperature (turbo input)
+						{.name="Marcia: $enum",					.udsParamId={6,		6		}}, //current gear
+						{.name="Acqua: $3.0f""\xB0""C",			.udsParamId={68,	68		}}, //water temperature
+						{.name="EGR CMD: $2.2f %",					.udsParamId={73,	73		}}, //EGR command
+						{.name="EGR: $2.2f %",					.udsParamId={74,	74		}}, //EGR status
+						{.name="Turbo Req.: $2.1f bar",				.udsParamId={76,	76		}}, //Turbo Request pressure
+						{.name="Turbo Req.: $2.2f %",					.udsParamId={77,	77		}}, //Turbo Request percentage
+						{.name="Turbo: $2.2f""\xB0""C",			.udsParamId={78,	78		}}, //Turbo temperature
+						{.name="Turbo: $2.2f bar",					.udsParamId={79,	79		}}, //Turbo pressure
+						{.name="Turbo: $2.2f %",					.udsParamId={80,	80		}}, //Turbo percentage
+						{.name="Boost Req.: $2.1f bar",				.udsParamId={81,	81		}}, //Boost Request pressure
+						{.name="Boost: $1.2f V",					.udsParamId={82,	82		}}, //Boost sensor voltage
+						{.name="Rail: $5.2f bar",					.udsParamId={83,	83		}}, //Rail pressure
+						{.name="Diesel: $2.2f""\xB0""C",			.udsParamId={84,	84		}}, //Diesel temperature
+						{.name="Odom. Ultima: $5.0f km",				.udsParamId={85,	85		}}, //Distance in km since last odometer reset
+						{.name="Aria Cond.: $2.2f bar",				.udsParamId={86,	86		}}, //Air conditioner pressure
+						{.name="Cons. Carb.: $1.2f L/h",				.udsParamId={87,	87		}}, //Fuel Consume
+						{.name="Debimetro: $3.2f""\xB0""C",		.udsParamId={88,	88		}}, //Debimeter temperature
+						{.name="Velocita': $3.2f km/h",					.udsParamId={7,		7		}}, //speed
+						{.name="Allarme cinture: $enum",				.udsParamId={13,	13		}}, //Seatbelt Alarm Status
+						{.name="0-100Km/h: $2.2f s",				.udsParamId={9,		9		}}, //0-100km/h Statistic
+						{.name="100-200Km/h: $2.2f s",				.udsParamId={10,	10		}}, //100-200km/h Statistic
+						{.name="Migliore  0-100: $2.2f s",				.udsParamId={11,	11		}}, //0-100km/h Best Statistic
+						{.name="Migliore 100-200: $2.2f s",				.udsParamId={12,	12		}}, //0-100km/h Best Statistic
+						{.name="Mod. guida: $enum",				.udsParamId={15,	15		}}, //Drive Style
+						{.name="Mappa pedale: $enum",					.udsParamId={17,	17		}}, //selected Pedal Map
 //						{.name="RAM: $5.0fB",						.udsParamId={16,	16		}}, //Free RAM
 
 //								{.name={'F','-','L',' ','T','I','R','E',':',' ',},					.reqId=0x18DAC7F1,	.reqLen=4,	.reqData=SWAP_UINT32(0x032240B1),	.replyId=0x18DAF1C7,	.replyLen=1,	.replyOffset=4, .replyValOffset=-50,	.replyScale=1,				.replyScaleOffset=0,	.replyDecimalDigits=0,	.replyMeasurementUnit={0xB0,'C',}						},
