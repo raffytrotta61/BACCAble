@@ -829,30 +829,33 @@
 					memset(dashboard_main_menu_array[2], ' ', DASHBOARD_MESSAGE_MAX_LENGTH);
 					switch(faultsStateMachine){
 						case 0: case 1: case 2: // in attesa risposta Body ECU
-							dashboard_main_menu_array[2][0]='W';
-							dashboard_main_menu_array[2][1]='A';
-							dashboard_main_menu_array[2][2]='I';
-							dashboard_main_menu_array[2][3]='T';
+							dashboard_main_menu_array[2][0]='A';
+							dashboard_main_menu_array[2][1]='t';
+							dashboard_main_menu_array[2][2]='t';
+							dashboard_main_menu_array[2][3]='e';
+							dashboard_main_menu_array[2][4]='n';
+							dashboard_main_menu_array[2][5]='d';
+							dashboard_main_menu_array[2][6]='i';
 							break;
 						case 3: // lista DTC disponibile
 							if(faultsDTCcount==0){
 								dashboard_main_menu_array[2][0]='N';
-								dashboard_main_menu_array[2][1]='O';
+								dashboard_main_menu_array[2][1]='o';
 								dashboard_main_menu_array[2][2]=' ';
-								dashboard_main_menu_array[2][3]='F';
-								dashboard_main_menu_array[2][4]='A';
-								dashboard_main_menu_array[2][5]='U';
-								dashboard_main_menu_array[2][6]='L';
-								dashboard_main_menu_array[2][7]='T';
-								dashboard_main_menu_array[2][8]='S';
+								dashboard_main_menu_array[2][3]='E';
+								dashboard_main_menu_array[2][4]='r';
+								dashboard_main_menu_array[2][5]='r';
+								dashboard_main_menu_array[2][6]='o';
+								dashboard_main_menu_array[2][7]='r';
+								dashboard_main_menu_array[2][8]='i';
 							}else{
 								uint8_t b0=faultsDTCbytes[faultsDTCsubmenuIndex][0];
 								uint8_t b1=faultsDTCbytes[faultsDTCsubmenuIndex][1];
 								uint8_t b2=faultsDTCbytes[faultsDTCsubmenuIndex][2];
 								dashboard_main_menu_array[2][0]='B';
-								dashboard_main_menu_array[2][1]='O';
-								dashboard_main_menu_array[2][2]='D';
-								dashboard_main_menu_array[2][3]='Y';
+								dashboard_main_menu_array[2][1]='o';
+								dashboard_main_menu_array[2][2]='d';
+								dashboard_main_menu_array[2][3]='y';
 								dashboard_main_menu_array[2][4]=' ';
 								dashboard_main_menu_array[2][5]=hx[b0>>4];
 								dashboard_main_menu_array[2][6]=hx[b0&0xF];
@@ -872,12 +875,12 @@
 							break;
 						case 4: // TIMEOUT
 							dashboard_main_menu_array[2][0]='T';
-							dashboard_main_menu_array[2][1]='I';
-							dashboard_main_menu_array[2][2]='M';
-							dashboard_main_menu_array[2][3]='E';
-							dashboard_main_menu_array[2][4]='O';
-							dashboard_main_menu_array[2][5]='U';
-							dashboard_main_menu_array[2][6]='T';
+							dashboard_main_menu_array[2][1]='i';
+							dashboard_main_menu_array[2][2]='m';
+							dashboard_main_menu_array[2][3]='e';
+							dashboard_main_menu_array[2][4]='o';
+							dashboard_main_menu_array[2][5]='u';
+							dashboard_main_menu_array[2][6]='t';
 							break;
 						default:
 							break;
@@ -887,10 +890,10 @@
 			case 3:
 				if(function_clear_faults_enabled==1){
 					if(clearFaultsRequest>0){
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "WAIT...     ", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Attendi...  ", 12);
 						commandsMenuEnabled=0; //disable menu movement
 					}else{
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "CLEAR FAULTS", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Canc. Errori", 12);
 						commandsMenuEnabled=1; //enable menu movement
 					}
 				}
@@ -907,7 +910,7 @@
 			case 5: //dyno
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','u','t','o',' ','F','e','r','m','a',' ',' '};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
@@ -917,14 +920,14 @@
 			case 7: //front brake
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','u','t','o',' ','F','e','r','m','a',' ',' '};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
 
 				if(printEnableDyno>0){
 					printEnableDyno--;
-					uint8_t enableDynoMsg[12]={BhBusIDparamString,'E','N','A','B','L','E',' ','D','Y','N','O'};
+					uint8_t enableDynoMsg[12]={BhBusIDparamString,'A','t','t','i','v','a',' ','D','y','n','o'};
 					addToUARTSendQueue(enableDynoMsg, 12);//print message "Enable Dyno"
 					return;
 				}
@@ -1046,15 +1049,15 @@
 			case 8: //4wd
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','u','t','o',' ','F','e','r','m','a',' ',' '};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
 				//nothing to do
 				break;
 			case 15: //Max Hold: update ON/OFF text
-				dashboard_main_menu_array[15][10] = maxHold_enabled ? 'N' : 'F';
-				dashboard_main_menu_array[15][11] = maxHold_enabled ? ' ' : 'F';
+				dashboard_main_menu_array[15][13] = maxHold_enabled ? 'N' : 'F';
+				dashboard_main_menu_array[15][14] = maxHold_enabled ? ' ' : 'F';
 				break;
 			default:
 				//nothing to do
@@ -1117,10 +1120,10 @@
 				break;
 			case 5: //{'S','h','i','f','t',' ','R','P','M',' ','3','0','0','0',},
 				floatToStr(tmpfloatString,(float)shift_threshold,0,5);
-				dashboard_setup_menu_array[setup_dashboardPageIndex][10]=tmpfloatString[0];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][11]=tmpfloatString[1];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][12]=tmpfloatString[2];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][13]=tmpfloatString[3];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][13]=tmpfloatString[0];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][14]=tmpfloatString[1];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][15]=tmpfloatString[2];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][16]=tmpfloatString[3];
 				break;
 			case 6: //{'[',' ',']','M','y','2','3',' ','I','P','C', },
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[function_ipc_my23_is_installed];
@@ -1160,23 +1163,23 @@
 				break;
 			case 18: //{'Ø',' ',' ','D','i','e','s','e','l',' ',' ',' ','P','a','r','a','m','s'},
 				if(function_is_diesel_enabled){
-					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='D';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='s';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='l';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][9] =' ';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][10]=' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='D';	//parametri diesel
+					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='i';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='s';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][16] ='l';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][17] =' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][18]=' ';
 				}else{
-					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='G';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='a';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='s';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='o';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='l';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][9] ='n';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][10]='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='B';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='n';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='z';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='i';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][16] ='n';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][17] ='a';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][18]=' ';
 				}
 				break;
 			case 19: //odometer blink
@@ -1295,13 +1298,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_acc_autostart];
 				switch(function_acc_autostart){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][16]=' ';
 						break;
 					case 1: //simulates RES button press
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='R';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='R';
 						break;
 					case 2: //simulates + button press
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='+';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='+';
 						break;
 					default: //we will never end here
 						break;
@@ -1311,13 +1314,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_close_windows_with_door_lock];
 				switch(function_close_windows_with_door_lock){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][14]=' ';
 						break;
 					case 1: //Close Windows 1
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='1';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='1';
 						break;
 					case 2: //Close Windows 2
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='2';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='2';
 						break;
 					default: //we will never end here
 						break;
@@ -1327,13 +1330,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_open_windows_with_door_lock];
 				switch(function_open_windows_with_door_lock){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][12]=' ';
 						break;
-					case 1: //Close Windows 1
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='1';
+					case 1: //Open Windows 1
+						dashboard_setup_menu_array[setup_dashboardPageIndex][12]='1';
 						break;
-					case 2: //Close Windows 2
-						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='2';
+					case 2: //Open Windows 2
+						dashboard_setup_menu_array[setup_dashboardPageIndex][12]='2';
 						break;
 					default: //we will never end here
 						break;
@@ -1370,17 +1373,17 @@
 		switch(params_setup_dashboardPageIndex){
 			case 0: //{'S','A','V','E','&','E','X','I','T',},
 				uartTxMsg[1]='S';
-				uartTxMsg[2]='A';
-				uartTxMsg[3]='V';
-				uartTxMsg[4]='E';
-				uartTxMsg[5]=' ';
-				uartTxMsg[6]='&';
-				uartTxMsg[7]=' ';
-				uartTxMsg[8]='E';
-				uartTxMsg[9]='X';
-				uartTxMsg[10]='I';
-				uartTxMsg[11]='T';
-				uartTxMsg[12]=0;
+				uartTxMsg[2]='a';
+				uartTxMsg[3]='l';
+				uartTxMsg[4]='v';
+				uartTxMsg[5]='a';
+				uartTxMsg[6]=' ';
+				uartTxMsg[7]='&';
+				uartTxMsg[8]=' ';
+				uartTxMsg[9]='E';
+				uartTxMsg[10]='s';
+				uartTxMsg[11]='c';
+				uartTxMsg[12]='i';
 				uartTxMsg[13]=0;
 				uartTxMsg[14]=0;
 				uartTxMsg[15]=0;
