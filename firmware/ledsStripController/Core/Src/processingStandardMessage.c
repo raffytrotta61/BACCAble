@@ -799,7 +799,7 @@ void processingStandardMessage(){
 		case 0x0000073C:
 			#if defined(C1baccable)
 				if(rx_msg_header.DLC>=8){
-					ACC_Status=(rx_msg_data[7]>>4) & 0x07; //Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
+					ACC_status=(rx_msg_data[7]>>4) & 0x07; //Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
 					/*
 					switch ((rx_msg_data[7]>>4) & 0x07) {
 						case 0x00: //ACC is off

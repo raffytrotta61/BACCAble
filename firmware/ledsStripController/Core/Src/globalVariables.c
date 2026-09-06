@@ -249,7 +249,7 @@ const char *FW_VERSION=_FW_VERSION;
 	uint8_t cruiseControlDisabled=1;
 	//uint8_t ACC_Disabled=1;
 	//uint8_t ACC_engaged=0;
-	uint8_t ACC_Status=0; 	//Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
+	uint8_t ACC_status=0; 	//Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
 							//note: 5 is fired when acc is engaged and you press brake, so acc becomes not engaged
 							//note: 4 and 7 are fired when acc is engaged and you press accelerator
 
