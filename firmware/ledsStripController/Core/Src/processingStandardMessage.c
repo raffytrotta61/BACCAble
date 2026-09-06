@@ -225,7 +225,7 @@ void processingStandardMessage(){
 					//DISABLE: brake pressed firmly enough and the sensors are beeping. Not while in reverse.
 					else if(currentPressure > 0x10) {
 						if(reverseGearActive == 0 && pdc_is_beeping == 1 && pdc_auto_disabled == 0) {
-							if (parkSensorsFunctionStatus != 0) { //park sensors currently on
+							if (parkSensorsLedStatus != 1) { //led not continuous -> park sensors currently on
 								requestToTogglePDC = 1;
 								pdc_auto_disabled = 1;
 							}
@@ -233,12 +233,12 @@ void processingStandardMessage(){
 					}
 					//ENABLE: brake released and the car is able to move again (not reverse, see the "if" above)
 					else if(currentPressure < 0x10) { //separate threshold, so it can be tuned apart from the disable one
-						if(pdc_auto_disabled == 1 && parkSensorsFunctionStatus == 0) { //we switched them off and they really are
+						if(pdc_auto_disabled == 1 && parkSensorsLedStatus == 1) { //we switched them off and they really are
 							requestToTogglePDC = 1;
 							pdc_auto_disabled = 0;
 						}
 						//the car put them back on by itself (speed exceeded): just drop the marker
-						else if (pdc_auto_disabled == 1 && parkSensorsFunctionStatus != 0) {
+						else if (pdc_auto_disabled == 1 && parkSensorsLedStatus != 1) {
 							pdc_auto_disabled = 0;
 						}
 					}
@@ -296,12 +296,11 @@ void processingStandardMessage(){
 			break;
 		case 0x000002EF: //if it is the message carrying the engaged gear (id 2ef) and if it is 8 bytes long
 			#if defined(C1baccable)
-				currentGear=rx_msg_data[0] & ~0xF;
+				currentGear=rx_msg_data[0]>>4;
 				nativeMaxHoldUpdate(6); //current gear
 
 				if(function_led_strip_controller_enabled==1){
-					scaledColorSet=scaleColorSet(currentGear); //first of all we clear the 4 least significant bits, then scaleColorSet() scales the value, to prepare it for the vumeter class
-					vuMeterUpdate(scaledVolume,scaledColorSet);
+					vuMeterUpdate(scaledVolume,currentGear);
 				}
 
 				//if(function_regeneration_alert_enabled){
@@ -556,7 +555,7 @@ void processingStandardMessage(){
 			#if defined(C2baccable)
 				if(rx_msg_header.DLC >= 4){
 					parkSensorsFunctionStatus=rx_msg_data[1] & 0b00000011; //0=off, 1=ON active, 2=ON inactive, 3=ON disabled
-					parkSensorsLedStatus=(rx_msg_data[3]>>6) & 0b00000011; //0=off, 1=continuous, 2=blink
+					parkSensorsLedStatus=(rx_msg_data[3]>>6) & 0b00000011; //0=off, 1=continuous (PDC is disabled), 2=blink
 				}
 			#endif
 			break;
@@ -665,9 +664,12 @@ void processingStandardMessage(){
 
 			//byte 6 bit 0 = PAMFrontActiveInDrive (0=On, 1=Off): front park sensors status
 			break;
-		case 0x000005A8:
+		case 0x000005A8: //msg from TCM
 			//when in race, byte 4 bit 3-6 has value 6
 			#if defined(C1baccable)
+				//currentGear=((rx_msg_data[3] & 0b00000111)<<1) | (rx_msg_data[4]>>7); //if we use this, we shall verify its use in the code
+				//Legend: 0=N, 1-9=1-9, 0xD=P,   0xE=R, 0xF=Undefined
+
 				if (ESCandTCinversion){
 					if((rx_msg_data[4] & 0x78)!=0x30){  //if not race (on C1 it is a msg from TCM or DCTM and received by ECM)
 						rx_msg_data[4] = (rx_msg_data[4] & ~0x78) | 0x30;  //set track mode (race)
@@ -797,20 +799,25 @@ void processingStandardMessage(){
 		case 0x0000073C:
 			#if defined(C1baccable)
 				if(rx_msg_header.DLC>=8){
+					ACC_Status=(rx_msg_data[7]>>4) & 0x07; //Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
+					/*
 					switch ((rx_msg_data[7]>>4) & 0x07) {
 						case 0x00: //ACC is off
 							//onboardLed_red_on();
 							ACC_Disabled=1; //enable additional parameter menu commands
 							ACC_engaged=0; //acc not engaged
 							break;
+						case 0x06: //suggestion ACC Engaged
 						case 0x02: //acc engaged
 							ACC_engaged=1;
 							ACC_Disabled=0; //disable additional parameter menu commands
 							break;
+
 						default:
 							ACC_Disabled=0; //disable additional parameter menu commands
 							ACC_engaged=0; //acc not engaged
 					}
+					*/
 				}
 			#endif
 			//contains status of ACC on byte 7, from bit 6 to 4 (0=disabled, 1=enabled, 2=engaged 3=engaged brake only, 4=override, 5=cancel)

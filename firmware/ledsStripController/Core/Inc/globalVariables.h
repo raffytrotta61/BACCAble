@@ -196,8 +196,12 @@
 
 		//
 		extern uint8_t cruiseControlDisabled;
-		extern uint8_t ACC_Disabled;
-		extern uint8_t ACC_engaged;
+		//extern uint8_t ACC_Disabled;
+		//extern uint8_t ACC_engaged;
+		extern uint8_t ACC_Status; 	//Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
+									//note: 5 is fired when acc is engaged and you press brake, so acc becomes not engaged
+									//note: 4 and 7 are fired when acc is engaged and you press accelerator
+
 		extern uint8_t wheelPressedButtonID; //0x10= released, 0x20=strong speed decrease, 0x18=speed decrease, 0x00=strong speed increase, 0x08=speed increase, 0x90=RES, CC on/off=0x12
 		extern uint8_t  lastPressedWheelButton; //default value, means no button pressed on the wheel
 		extern uint32_t lastPressedWheelButtonTime;//stores the last time a wheel button was pressed, in msec from boot
@@ -392,7 +396,7 @@
 		extern uint8_t rearBrakeMsgData[4][8]; //from last to first we have: diag session, tester present, IO Control - Short Term Adjustment(disable front brakes) (periodic)
 
 		extern uint8_t reverseGearActive;
-		extern uint8_t parkSensorsFunctionStatus; //0=park sensors off, anything else=on
+		extern uint8_t parkSensorsFunctionStatus; //0=off, 1=ON active, 2=ON inactive, 3=ON disabled
 		extern uint8_t parkSensorsLedStatus; //0=off, 1=continuous, 2=blink
 
 		// @netzmark PDC auto disable - the front chime is silenced by simulating a press of the park sensors
@@ -466,6 +470,8 @@
 
 	extern uint32_t currentRpmSpeed;	//used by C1baccable
 	extern uint8_t currentGear; 		//used by C1baccable and BHbaccable
+										//currentGear on BH(0x3E8) and C1(0x5A8): 	0=N, 1-9=1-9, 0xD=P, 0xE=R, 0xF=Undefined
+										//currentGear on C1(msg 0x2EF): 			0=N, 1-6 e 8-10=1-9, 0x7=R, 0xF=Undefined
 
 	// Storage for status and received message buffer
 	extern CAN_RxHeaderTypeDef rx_msg_header;  //msg header

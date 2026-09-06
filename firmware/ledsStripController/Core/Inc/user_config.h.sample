@@ -51,9 +51,12 @@
 	// #define HAS_VIRTUAL_PAD					// if uncommented, allows "toggle HAS" to appear on main menu. see manual. It can changed inside baccable SETUP menu.
 	// #define QV_EXHAUST_FLAP_FUNCTION_ENABLED // if uncommented, allows to force to open position, the exhaust gas valve of Giulia QV, by means of double clic of Release button located in automatic gear cars. For Manual Giulia, the "Toggle QV Valve" will be available in baccable main menu. It can changed inside baccable SETUP menu.
 	// #define PEDAL_MAP_POWER	(uint8_t)-1		// if uncommented allows to set the pedal booster map apmplification factor. It shall be a integer number between -10 and +10.
-	// #define DEBUG_CAN_RX_SIMULATION			// simulates can bus message receive. useful to test sniffer function.sets the can bus to silent+loopback (own messages are received back, nothing is driven onto CAN_TX, no ack needed from another node), injects a simulated 8 byte message (id 0x1EF, last byte incrementing) every 100msec. The injected message goes thru can_tx()/can_process() like any real message, so it exercises the very same reception and interception path used for real traffic. Applies to C1baccable, C2baccable and BHbaccable.
-	// #define DEBUG_START_SNIFFER				// auto-enables the SNIFFER function 10 seconds after boot, and saves to flash
-	// #define DEBUG_START_ELM327				// auto-enables the ELM327 function 10 seconds after boot, and saves to flash
+	// #define DEBUG_CAN_RX_SIMULATION			// DO NOT USE. simulates can bus message receive. useful for debug purposes. sets the can bus to silent+loopback (own messages are received back, nothing is driven onto CAN_TX, no ack needed from another node), injects a simulated 8 byte message (id 0x1EF, last byte incrementing) every 100msec. The injected message goes thru can_tx()/can_process() like any real message, so it exercises the very same reception and interception path used for real traffic. Applies to C1baccable, C2baccable and BHbaccable.
+	// #define DEBUG_START_SNIFFER				// DO NOT USE. used during debug operations. auto-enables the SNIFFER function 10 seconds after boot, and saves to flash
+	// #define DEBUG_START_ELM327				// DO NOT USE. used during debug operations. auto-enables the ELM327 function 10 seconds after boot, and saves to flash
+	// #define FRONT_PARK_MUTE					// if uncommented it will enable "park mute" functionality. It can enabled/disabled inside baccable SETUP menu
+	// #define SNIFFER							// if uncommented it will enable "sniffer" functionality. It can enabled/disabled inside baccable SETUP menu
+	// #define ELM327							// if uncommented it will enable "elm327" functionality. It can enabled/disabled inside baccable SETUP menu
 	
 	
 	// The following defines are used, if uncommented, by C2baccable board:
