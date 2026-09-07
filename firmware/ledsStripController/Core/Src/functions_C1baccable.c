@@ -900,11 +900,11 @@
 				break;
 			case 4: //immo
 				if(immobilizerEnabled){
-					dashboard_main_menu_array[main_dashboardPageIndex][14]='N'; //on
-					dashboard_main_menu_array[main_dashboardPageIndex][15]=' ';
+					dashboard_main_menu_array[main_dashboardPageIndex][13]='N'; //on
+					dashboard_main_menu_array[main_dashboardPageIndex][14]=' ';
 				}else{
-					dashboard_main_menu_array[main_dashboardPageIndex][14]='F'; //off
-					dashboard_main_menu_array[main_dashboardPageIndex][15]='F';
+					dashboard_main_menu_array[main_dashboardPageIndex][13]='F'; //off
+					dashboard_main_menu_array[main_dashboardPageIndex][14]='F';
 				}
 				break;
 			case 5: //dyno
@@ -1056,8 +1056,8 @@
 				//nothing to do
 				break;
 			case 15: //Max Hold: update ON/OFF text
-				dashboard_main_menu_array[15][13] = maxHold_enabled ? 'N' : 'F';
-				dashboard_main_menu_array[15][14] = maxHold_enabled ? ' ' : 'F';
+				dashboard_main_menu_array[15][10] = maxHold_enabled ? 'N' : 'F';
+				dashboard_main_menu_array[15][11] = maxHold_enabled ? ' ' : 'F';
 				break;
 			default:
 				//nothing to do
@@ -1163,23 +1163,23 @@
 				break;
 			case 18: //{'Ø',' ',' ','D','i','e','s','e','l',' ',' ',' ','P','a','r','a','m','s'},
 				if(function_is_diesel_enabled){
-					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='D';	//parametri diesel
-					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='s';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][16] ='l';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][17] =' ';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][18]=' ';
-				}else{
-					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='B';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][10] ='D';	//parametri diesel
+					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='i';
 					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='n';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='z';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][16] ='n';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][17] ='a';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][18]=' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='s';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='l';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][16] =' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][17] =' ';
+				}else{
+					dashboard_setup_menu_array[setup_dashboardPageIndex][10] ='B';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='n';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='z';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='i';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='n';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][16] ='a';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
 				}
 				break;
 			case 19: //odometer blink
@@ -1298,13 +1298,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_acc_autostart];
 				switch(function_acc_autostart){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][15]=' ';
 						break;
 					case 1: //simulates RES button press
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='R';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='R';
 						break;
 					case 2: //simulates + button press
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='+';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='+';
 						break;
 					default: //we will never end here
 						break;
@@ -1314,13 +1314,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_close_windows_with_door_lock];
 				switch(function_close_windows_with_door_lock){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][16]=' ';
 						break;
 					case 1: //Close Windows 1
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='1';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='1';
 						break;
 					case 2: //Close Windows 2
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='2';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='2';
 						break;
 					default: //we will never end here
 						break;
@@ -1330,13 +1330,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_open_windows_with_door_lock];
 				switch(function_open_windows_with_door_lock){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][12]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][14]=' ';
 						break;
 					case 1: //Open Windows 1
-						dashboard_setup_menu_array[setup_dashboardPageIndex][12]='1';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='1';
 						break;
 					case 2: //Open Windows 2
-						dashboard_setup_menu_array[setup_dashboardPageIndex][12]='2';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='2';
 						break;
 					default: //we will never end here
 						break;
