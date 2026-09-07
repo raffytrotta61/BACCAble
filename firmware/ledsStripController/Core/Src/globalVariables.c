@@ -247,8 +247,12 @@ const char *FW_VERSION=_FW_VERSION;
 
 	//
 	uint8_t cruiseControlDisabled=1;
-	uint8_t ACC_Disabled=1;
-	uint8_t ACC_engaged=0;
+	//uint8_t ACC_Disabled=1;
+	//uint8_t ACC_engaged=0;
+	uint8_t ACC_status=0; 	//Legend: 0=Off, 1=Enabled, 2=Engaged, 3=EngagedBrakeOnly, 4=EngagedOverride, 5=Cancel, 6=SuggestionEngaged, 7=SuggestionOverride
+							//note: 5 is fired when acc is engaged and you press brake, so acc becomes not engaged
+							//note: 4 and 7 are fired when acc is engaged and you press accelerator
+
 	uint8_t wheelPressedButtonID=0x10; //0x10= released, 0x20=strong speed decrease, 0x18=speed decrease, 0x00=strong speed increase, 0x08=speed increase, 0x90=RES, CC on/off=0x12
 	uint8_t  lastPressedWheelButton=0xff; //default value, means no button pressed on the wheel
 	uint32_t lastPressedWheelButtonTime=0;//stores the last time a wheel button was pressed, in msec from boot
@@ -447,7 +451,7 @@ const char *FW_VERSION=_FW_VERSION;
 	CAN_TxHeaderTypeDef rearBrakeMsgHeader[4]={{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA28F1, .DLC=5},{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA28F1, .DLC=8},{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA28F1, .DLC=3},{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA28F1, .DLC=3}};
 	uint8_t rearBrakeMsgData[4][8]= {{0x04, 0x2F, 0x5A, 0xBD, 0x00,},{0x07, 0x2F, 0x5A, 0xBD, 0x03, 0x27, 0x10, 0x03},{0x02, 0x3E, 0x80,},{0x02, 0x10, 0x40,}}; //from last to first we have: diag session, tester present, IO Control - Short Term Adjustment(disable front brakes) (periodic)
 
-	uint8_t reverseGearActive  =0; //0=not inserted, 1=rear gear engaged, 2=not used
+	uint8_t reverseGearActive  =0; //0=reverse not engaged, 1=reverse engaged (normalised in processingMessage0x000000FC.c)
 	uint8_t parkSensorsFunctionStatus=0; //0=off, 1=ON active, 2=ON inactive, 3=ON disabled
 	uint8_t parkSensorsLedStatus; //0=off, 1=continuous, 2=blink
 
@@ -526,6 +530,8 @@ UART_HandleTypeDef huart2; // this is the serial line between baccables
 
 uint32_t currentRpmSpeed=0;	//used by C1baccable
 uint8_t currentGear=0; 		//used by C1baccable and BHbaccable
+							//currentGear on BH(0x3E8) and C1(0x5A8): 	0=N, 1-9=1-9, 0xD=P,   0xE=R, 0xF=Undefined
+							//currentGear on C1(msg 0x2EF): 			0=N, 1-6 and 8-10=1-9, 0x7=R, 0xF=Undefined
 
 // Storage for status and received message buffer
 CAN_RxHeaderTypeDef rx_msg_header;  //msg header

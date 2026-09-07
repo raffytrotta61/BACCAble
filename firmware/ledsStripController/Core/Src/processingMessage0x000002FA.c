@@ -43,9 +43,9 @@ void processingMessage0x000002FA(){
 					onboardLed_blue_on();
 					break;
 				case 0x90: //RES pressed
-					if (newWheelPressedButtonID==0x10 && ACC_engaged) ACC_WAS_ENGAGED_WHEN_RES_WAS_PRESSED=1; //if begin to press button RES and ACC is Engaged, set ACC_WAS_ENGAGED_WHEN_RES_WAS_PRESSED
+					if (newWheelPressedButtonID==0x10 && (ACC_status>1) && (ACC_status!=5)) ACC_WAS_ENGAGED_WHEN_RES_WAS_PRESSED=1; //if we begin to press RES button and ACC is Engaged, set ACC_WAS_ENGAGED_WHEN_RES_WAS_PRESSED
 					newWheelPressedButtonID=0x90; //store the new RES button status (pressed)
-					if (ACC_engaged && ACC_WAS_ENGAGED_WHEN_RES_WAS_PRESSED){
+					if ((ACC_status>1) && (ACC_status!=5) && ACC_WAS_ENGAGED_WHEN_RES_WAS_PRESSED){
 						//simulate the distance button press
 						memcpy(ACC_msg_data, &rx_msg_data, rx_msg_header.DLC);
 						ACC_msg_data[0] = 0x50; //ACC distance change
@@ -64,7 +64,7 @@ void processingMessage0x000002FA(){
 		}
 
 		if(function_acc_autostart){
-			if(ACC_engaged){
+			if((ACC_status>1) && (ACC_status!=5)){ //if ACC engaged
 				if(carSteadyCounter==200 && brakeIntervention_ACC_ESC_ASR){ //if car is steady and brake is pressed by ACC
 					if(rx_msg_data[0]==0x10){ //if no button was pressed on cruise control pad
 						if (currentTime-lastSentAutostartMsg>500){ //once each 1,5 seconds
@@ -90,7 +90,7 @@ void processingMessage0x000002FA(){
 			}
 		}
 
-		if(cruiseControlDisabled && ACC_Disabled){ //if we are allowed to press buttons, use them in baccable menu
+		if(cruiseControlDisabled && (ACC_status==0)){ //if we are allowed to press buttons (CC and ACC disabled), use them in baccable menu
 			switch(rx_msg_data[0]){
 				case 0x18://if cruise control speed reduction button was pressed, user wants to see next page
 					if(wheelPressedButtonID==0x10 && baccableDashboardMenuVisible){ //if button released, use pressed button
@@ -886,7 +886,7 @@ void processingMessage0x000002FA(){
 		}
 
 		#ifndef PERMANENTLY_DISABLE_IMMO
-			if(cruiseControlDisabled && ACC_Disabled ){ //if we are allowed to use the buttons of the cruise control
+			if(cruiseControlDisabled && (ACC_status==0) ){ //if we are allowed to use the buttons of the cruise control
 				if (currentRpmSpeed>400){ //if motor is on
 					if(currentGear==0){ //gear is neutral
 						if((rx_msg_data[0]==0x08) && ((wheelPressedButtonID==0x10) || (wheelPressedButtonID==0x08))){ //user is pressing CC soft speed up button and it was previously released (or pressed by baccable menu up here)

@@ -31,7 +31,6 @@
 	uint32_t getFreeRAM(void);
 	void clearDashboardBaccableMenu(void);
 	float scaleVolume(uint8_t vol);
-	uint8_t scaleColorSet(uint8_t col);
 	uint8_t saveOnflash(void);
 	uint8_t resetStatisticsOnFlash();
 	uint8_t saveStatisticsOnFlash(void);

@@ -1485,7 +1485,7 @@
 				return ((float)oilTemperature * single_uds_params_array[paramId].replyScale) + single_uds_params_array[paramId].replyScaleOffset;
 				break;
 			case 6: //current gear
-				return (float)(currentGear>>4);
+				return (float)currentGear;
 				break;
 			case 7: //current speed (km/h)
 				return currentSpeed_km_h;
@@ -1707,15 +1707,6 @@
 			vol=vol-51;
 		}
 		return (float)(((float)vol*100.0f)/180.0f);
-	}
-
-	// this function scales value received from can bus. It is assumed that gear selection will change the color effect of the leds strip
-	uint8_t scaleColorSet(uint8_t col){
-		//id 2ef, primo byte, 70=r, 00=n, f0=marcia inserita ma frizione premuta (indefinito), 10=prima, 20=seconda..
-		col= col>>4;
-		//onboardLed_red_blink(col);
-		// 7=backward, f=gear set but frizione premuta (undefined), 1=first gear , 2=second gear, ... , 6= sixt gear
-		return col;
 	}
 
 	uint8_t saveOnflash(){ //store params permanently on flash
@@ -2223,17 +2214,29 @@
 				break;
 			case 30: //FRONT_PARK_MUTE (1=enabled 0=disabled)
 				if(tmpParam>1){
+					#if defined(FRONT_PARK_MUTE) //user_config 28/08/2026
+						return 1;
+					#else
 					return 0; // flash non inizializzata: default disabilitato
+					#endif
 				}
 				break;
 			case 31: //SNIFFER (1=enabled 0=disabled) //sniffer function 24/08/2026
 				if(tmpParam>1){
+					#if defined(SNIFFER) //user_config 28/08/2026
+						return 1;
+					#else
 					return 0; // flash non inizializzata: default disabilitato
+					#endif
 				}
 				break;
 			case 32: //ELM327 (1=enabled 0=disabled) //elm327 function 26/08/2026
 				if(tmpParam>1){
+					#if defined(ELM327) //user_config 28/08/2026
+						return 1;
+					#else
 					return 0; // flash non inizializzata: default disabilitato
+					#endif
 				}
 				break;
 			default:

@@ -9,7 +9,7 @@
 
 	//this is used to store FW version, also shown on usb when used as slcan
 	#ifndef BUILD_VERSION //optional compile time define with -D, default: undefined
-		#define BUILD_VERSION "V.3.7.4"  //versioning rule: first digit major change, second digit minor change (like new feature), third digit bug fix or cosmetics
+		#define BUILD_VERSION "V.3.7.5"  //versioning rule: first digit major change, second digit minor change (like new feature), third digit bug fix or cosmetics
 	#endif
 	#define _FW_VERSION "BACCABLE " BUILD_VERSION
 
@@ -310,6 +310,13 @@
 
 	#if (defined(SMART_DISABLE_START_STOP) && defined(DISABLE_START_STOP))
 		#error "invalid combination of defines. Choose SMART_DISABLE_START_STOP or DISABLE_START_STOP."
+	#endif
+
+	//user_config 28/08/2026 - the two share the single usb cdc port, so only one of them can ever run. Asking
+	//for both as a power on default would start the sniffer and silently leave elm327 out, while the setup menu
+	//would still show it ticked and the first SAVE&EXIT would write that contradictory pair to flash.
+	#if (defined(SNIFFER) && defined(ELM327))
+		#error "invalid combination of defines. SNIFFER and ELM327 share the usb port: choose one."
 	#endif
 
 
