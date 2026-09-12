@@ -893,7 +893,7 @@
 						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Attendi...  ", 12);
 						commandsMenuEnabled=0; //disable menu movement
 					}else{
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Canc. Errori", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Cancella Errori", 15);
 						commandsMenuEnabled=1; //enable menu movement
 					}
 				}
