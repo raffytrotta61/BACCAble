@@ -104,7 +104,7 @@
 						{.name="Olio: $3.2f mm",					.udsParamId={64,	64		}}, //Oil quantity in mm
 						{.name="AdBlue: $3.2f L",					.udsParamId={65,	65		}}, //Adblue quantity in Liters
 						{.name="AdBlue: $3.2f %",					.udsParamId={66,	66		}}, //Adblue quantity in percentage
-						{.name="Cambio: $3.2f""\xB0""C",			.udsParamId={33,	33		}}, //gearbox temperature
+						{.name="Cambio: $3.0f""\xB0""C",			.udsParamId={33,	33		}}, //gearbox temperature
 						{.name="Gas Scarico: $4.0f""\xB0""C",		.udsParamId={67,	67		}}, //exhaust gas temperature (turbo input)
 						{.name="Marcia: $enum",					.udsParamId={6,		6		}}, //current gear
 						{.name="Acqua: $3.0f""\xB0""C",			.udsParamId={68,	68		}}, //water temperature
@@ -123,7 +123,7 @@
 						{.name="Aria Cond.: $2.2f bar",				.udsParamId={86,	86		}}, //Air conditioner pressure
 						{.name="Cons. Carb.: $1.2f L/h",				.udsParamId={87,	87		}}, //Fuel Consume
 						{.name="Debimetro: $3.2f""\xB0""C",		.udsParamId={88,	88		}}, //Debimeter temperature
-						{.name="Velocita': $3.2f km/h",					.udsParamId={7,		7		}}, //speed
+						{.name="Velocita': $3.0f km/h",					.udsParamId={7,		7		}}, //speed
 						{.name="Allarme cinture: $enum",				.udsParamId={13,	13		}}, //Seatbelt Alarm Status
 						{.name="0-100Km/h: $2.2f s",				.udsParamId={9,		9		}}, //0-100km/h Statistic
 						{.name="100-200Km/h: $2.2f s",				.udsParamId={10,	10		}}, //100-200km/h Statistic
