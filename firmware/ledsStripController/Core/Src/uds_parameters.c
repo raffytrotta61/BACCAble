@@ -85,6 +85,7 @@
 						{.name="Batteria $2.2f V|$3.1f A",					.udsParamId={62,	4		}}, //param couple: BAT voltage and current
 						{.name="DPF $2.2f %|$2.2f""\xB0""C",		.udsParamId={55,	56		}}, //param couple: DPF clogging percentage and temperature
 						{.name="Rigen $2.1f %|$3.0f""\xB0""C",		.udsParamId={57,	56		}}, //param couple: DPF regeneration progress percentage and temperature
+						{.name="EGR C.$3.0f% ST.$3.0f%",			.udsParamId={73,	74		}}, //param couple: EGR cmd and sts
 						{.name="Potenza: $3.2f CV   ",					.udsParamId={1,		1		}}, //Power
 						{.name="Coppia: $3.2f Nm",					.udsParamId={2,		2		}}, //Torque
 						{.name="DPF: $3.2f %",					.udsParamId={55,	55		}}, //DPF clogging percentage
