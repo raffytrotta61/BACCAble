@@ -362,6 +362,23 @@
 			}
 		}
 
+		//dyno debug 04/10/2026 - 4wd and dyno status changes, detected here in the main loop: _4wd_disabled is written by the
+		//menu, the engine off logic and the sequence below, DynoModeEnabledOnMaster by the uart rx interrupt (no tracing allowed there)
+		if(_4wd_disabled!=snifferLast4wdDisabled){
+			SNIFFER_DEBUG2(0x2300, snifferLast4wdDisabled, ((uint32_t)function_4wd_disabler_enabled<<8)|_4wd_disabled); //4wd: status changed. v1=old, v2=new (byte1=function enabled, byte0=_4wd_disabled; 1 = ECU reset loop running) //dyno debug 04/10/2026
+			snifferLast4wdDisabled=_4wd_disabled;
+		}
+		if(DynoModeEnabledOnMaster!=snifferLastDynoEnabledOnMaster){
+			SNIFFER_DEBUG2(0x2301, DynoModeEnabledOnMaster, _4wd_disabled); //4wd: dyno status reported by C2 changed. v1=new dyno status, v2=current _4wd_disabled //dyno debug 04/10/2026
+			snifferLastDynoEnabledOnMaster=DynoModeEnabledOnMaster;
+		}
+
+		//readFaults debug 05/10/2026 - read faults state changes, detected here in the main loop (start from menu, timeout, end, exit)
+		if(faultsStateMachine!=snifferLastFaultsState){
+			SNIFFER_DEBUG2(0x2500, snifferLastFaultsState, faultsStateMachine); //read faults: state changed. v1=old, v2=new (0xFF idle, 0 session, 1 ReadDTC, 2 multiframe, 3 list ready, 4 TIMEOUT) //readFaults debug 05/10/2026
+			snifferLastFaultsState=faultsStateMachine;
+		}
+
 		if(function_4wd_disabler_enabled==1){
 			if(_4wd_disabled>0){
 				uint8_t tempDeltaTime=0;
@@ -665,7 +682,9 @@
 					if(main_dashboardPageIndex==2){ //readFaults 12/08/2026
 						// Timeout stati attesa 0/1/2: 2 secondi senza risposta dal Body ECU
 						if(faultsStateMachine < 3){
-							if(currentTime - faultsTimer > 2000){
+							// readFaults fix 05/10/2026 - dopo un 7F xx 78 (responsePending) la ECU ha fino a P2*server (5 s) per rispondere
+							if(currentTime - faultsTimer > (faultsResponsePending ? 5000 : 2000)){
+								SNIFFER_DEBUG2(0x2507, faultsStateMachine, faultsResponsePending); //read faults: timeout, no reply from Body ECU. v1=state, v2=1 if waiting after responsePending //readFaults debug 05/10/2026
 								faultsStateMachine = 4; // transizione a TIMEOUT display
 								faultsTimer = currentTime;
 							}
@@ -852,25 +871,40 @@
 								uint8_t b0=faultsDTCbytes[faultsDTCsubmenuIndex][0];
 								uint8_t b1=faultsDTCbytes[faultsDTCsubmenuIndex][1];
 								uint8_t b2=faultsDTCbytes[faultsDTCsubmenuIndex][2];
+								// readFaults fix 05/10/2026 - DTC in formato SAE J2012, come negli strumenti di diagnosi:
+								// "BODY B10AA-4A 1/2". I 2 bit alti del primo byte danno la lettera (P/C/B/U), i 2 successivi
+								// la prima cifra, poi 3 cifre esadecimali; il terzo byte e' il tipo di guasto (FTB) dopo il
+								// trattino. Prima si mostravano i 3 byte grezzi ("BODY 90AA4A").
+								static const char dtcLetter[4]={'P','C','B','U'};
 								dashboard_main_menu_array[2][0]='B';
 								dashboard_main_menu_array[2][1]='o';
 								dashboard_main_menu_array[2][2]='d';
 								dashboard_main_menu_array[2][3]='y';
 								dashboard_main_menu_array[2][4]=' ';
-								dashboard_main_menu_array[2][5]=hx[b0>>4];
-								dashboard_main_menu_array[2][6]=hx[b0&0xF];
-								dashboard_main_menu_array[2][7]=hx[b1>>4];
-								dashboard_main_menu_array[2][8]=hx[b1&0xF];
-								dashboard_main_menu_array[2][9]=hx[b2>>4];
-								dashboard_main_menu_array[2][10]=hx[b2&0xF];
-								// Contatore N/M in posizione 12-16
+								dashboard_main_menu_array[2][5]=dtcLetter[b0>>6];
+								dashboard_main_menu_array[2][6]=(char)('0'+((b0>>4)&0x3));
+								dashboard_main_menu_array[2][7]=hx[b0&0xF];
+								dashboard_main_menu_array[2][8]=hx[b1>>4];
+								dashboard_main_menu_array[2][9]=hx[b1&0xF];
+								dashboard_main_menu_array[2][10]='-';
+								dashboard_main_menu_array[2][11]=hx[b2>>4];
+								dashboard_main_menu_array[2][12]=hx[b2&0xF];
+								// Contatore dalla posizione 14 (la riga ha 18 caratteri): "n/m" per n da 1 a 9 ("9/40" = 4
+								// caratteri), solo "n" da 10 in poi ("10/40" non ci starebbe). m e' il totale dei guasti validi
+								// nella risposta, anche oltre i FAULTS_DTC_MAX della lista: con 40 guasti si scorre da 1/40 a 20
+								// e si sa che ce ne sono altri. Oltre 99 si mostra 99 (non ci sono altri caratteri).
 								uint8_t n=(uint8_t)(faultsDTCsubmenuIndex+1);
-								uint8_t m=faultsDTCcount;
-								dashboard_main_menu_array[2][12]=(n>=10)?((char)('0'+n/10)):' ';
-								dashboard_main_menu_array[2][13]=(char)('0'+n%10);
-								dashboard_main_menu_array[2][14]='/';
-								dashboard_main_menu_array[2][15]=(m>=10)?((char)('0'+m/10)):' ';
-								dashboard_main_menu_array[2][16]=(char)('0'+m%10);
+								uint8_t m=(faultsDTCtotal>99)?99:(uint8_t)faultsDTCtotal;
+								if(n<10){
+									uint8_t pos=14;
+									dashboard_main_menu_array[2][pos++]=(char)('0'+n);
+									dashboard_main_menu_array[2][pos++]='/';
+									if(m>=10) dashboard_main_menu_array[2][pos++]=(char)('0'+m/10);
+									dashboard_main_menu_array[2][pos]=(char)('0'+m%10);
+								}else{
+									dashboard_main_menu_array[2][14]=(char)('0'+n/10);
+									dashboard_main_menu_array[2][15]=(char)('0'+n%10);
+								}
 							}
 							break;
 						case 4: // TIMEOUT
@@ -885,6 +919,13 @@
 						default:
 							break;
 					}
+				}else if(dashboard_menu_indent_level==0){
+					//readFaults fix 05/10/2026 - while reading, WAIT / DTC / TIMEOUT are written into this very row of the main
+					//menu: back on the main menu (RES, timeout, end of list) the row kept the last DTC shown instead of the
+					//menu entry. Put the label back whenever the main menu is shown.
+					static const uint8_t readFaultsLabel[]={'R','e','a','d',' ','F','a','u','l','t','s'};
+					memset(dashboard_main_menu_array[2], ' ', DASHBOARD_MESSAGE_MAX_LENGTH);
+					memcpy(dashboard_main_menu_array[2], readFaultsLabel, sizeof(readFaultsLabel));
 				}
 				break;
 			case 3:

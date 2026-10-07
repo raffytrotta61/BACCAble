@@ -405,19 +405,23 @@ const char *FW_VERSION=_FW_VERSION;
 
 	//readFaults 12/08/2026 - BEGIN
 	// Definizioni variabili per la sequenza UDS di lettura DTC dal Body ECU (ECU 0x40)
-	// Il buffer faultsRxBuffer accumula il payload ISO-TP completo (primo frame + consecutivi).
+	// I record DTC vengono decodificati man mano che arrivano (faultsConsumePayloadByte): niente buffer del payload.
 	// faultsBodyTxHeader ha ExtId fisso 0x18DA40F1; DLC aggiornato prima di ogni can_tx.
 	uint8_t  faultsStateMachine = 0xFF;              // 0xFF=inattivo
 	uint8_t  faultsDTCcount = 0;                     // numero DTC ricevuti e validi
+	uint16_t faultsDTCtotal = 0;                     // readFaults fix 05/10/2026 - DTC validi nella risposta, anche oltre FAULTS_DTC_MAX (mostrato come totale n/m)
 	uint8_t  faultsDTCsubmenuIndex = 0;              // indice corrente scorrimento lista DTC
 	uint8_t  faultsDTCbytes[FAULTS_DTC_MAX][3];      // record DTC: [high, mid, low] per record
-	uint8_t  faultsRxBuffer[90];                     // buffer riassemblaggio ISO-TP payload
+	uint8_t  faultsRecord[4];                        // readFaults fix 05/10/2026 - record DTC in composizione [hi][mid][lo][status]
+	uint8_t  faultsRecordFill = 0;                   // readFaults fix 05/10/2026 - byte gia' presenti in faultsRecord
 	uint16_t faultsRxExpected = 0;                   // byte totali attesi (da first frame)
 	uint16_t faultsRxReceived = 0;                   // byte payload ricevuti finora
 	uint8_t  faultsRxNextSN = 0;                     // numero sequenza atteso prossimo CF
 	uint32_t faultsTimer = 0;                        // timestamp per timeout e display TIMEOUT
 	CAN_TxHeaderTypeDef faultsBodyTxHeader = {.IDE=CAN_ID_EXT, .RTR=CAN_RTR_DATA, .ExtId=0x18DA40F1, .DLC=3};
 	uint8_t  faultsBodyTxData[8];                    // buffer dati CAN per tutte le tx verso Body ECU
+	uint8_t  faultsResponsePending = 0;              // readFaults fix 05/10/2026 - 1 = ricevuto 7F xx 78 (responsePending): timeout esteso a P2*server
+	uint8_t  snifferLastFaultsState = 0xFF;          // readFaults debug 05/10/2026 - ultimo faultsStateMachine tracciato da C1baccablePeriodicCheck
 	//readFaults 12/08/2026 - END
 
 
@@ -445,6 +449,8 @@ const char *FW_VERSION=_FW_VERSION;
 	uint32_t last_sent_tester_presence_msg_time=0; //stores time in millisec. from last sent presence. used when dyno is enabled
 	uint32_t DynoStateMachineLastUpdateTime=0; //stores time (in milliseconds from power on) when Park Assist button press was read last time
 	uint8_t ParkAssistButtonPressCount=0; //stores number of times this message field was received
+	uint8_t snifferDynoLastModeEnabled=0;		//dyno debug 04/10/2026 - last DynoModeEnabled traced by C2PeriodicCheck, to emit a debug frame only on change
+	uint8_t snifferDynoLastStateMachine=0xff;	//dyno debug 04/10/2026 - last DynoStateMachine traced by C2PeriodicCheck, to emit a debug frame only on change
 
 	//FRONT_BRAKE_FORCER
 	uint32_t last_sent_rear_brake_msg_time=0;
@@ -545,6 +551,10 @@ uint8_t front_brake_forced=0; //if=5 disables Front brakes
 uint8_t DynoModeEnabledOnMaster=0; //status of dyno in master board. tells if dyno is active
 uint32_t last_4wd_disabled_overlay_time = 0; // 4wd constraint relax change 24/08/2026
 uint8_t  show_4wd_disabled_overlay = 0;       // 4wd constraint relax change 24/08/2026
+#if defined(C1baccable)
+	uint8_t snifferLast4wdDisabled=0;			//dyno debug 04/10/2026 - last _4wd_disabled traced by C1baccablePeriodicCheck, to emit a debug frame only on change
+	uint8_t snifferLastDynoEnabledOnMaster=0;	//dyno debug 04/10/2026 - last DynoModeEnabledOnMaster traced by C1baccablePeriodicCheck (it is written by the uart rx interrupt, where tracing is not allowed)
+#endif
 
 //sniffer function 24/08/2026 - BEGIN
 #if defined(C1baccable) || defined(C2baccable) || defined(BHbaccable)
@@ -561,6 +571,7 @@ uint8_t  show_4wd_disabled_overlay = 0;       // 4wd constraint relax change 24/
 	uint16_t snifferRingCount=0;
 	uint16_t snifferDroppedFrames=0;
 	uint32_t snifferLastFlushTime=0;
+	uint16_t snifferInflightBytes=0; //sniffer tx/debug 04/10/2026
 
 	#ifdef DEBUG_CAN_RX_SIMULATION
 		uint32_t debugSimulatedMsgLastInjectTime=0;

@@ -443,10 +443,13 @@ void processingMessage0x000002FA(){
 									// Reset DTC precedenti e avvia sequenza UDS verso Body ECU (0x40)
 									faultsStateMachine     = 0;
 									faultsDTCcount         = 0;
+									faultsDTCtotal         = 0; // readFaults fix 05/10/2026
 									faultsDTCsubmenuIndex  = 0;
 									faultsRxReceived       = 0;
 									faultsRxExpected       = 0;
+									faultsRecordFill       = 0; // readFaults fix 05/10/2026
 									faultsRxNextSN         = 1;
+									faultsResponsePending  = 0; // readFaults fix 05/10/2026
 									faultsTimer            = currentTime;
 									faultsBodyTxHeader.DLC = 3;
 									faultsBodyTxData[0] = 0x02; // PCI: SF 2 byte
@@ -822,6 +825,7 @@ void processingMessage0x000002FA(){
 									sendSetupDashboardPageToSlaveBaccable();
 									break;
 								case 2: //read faults - ritorna al menu principale //readFaults 12/08/2026
+									SNIFFER_DEBUG1(0x2508, faultsStateMachine); //read faults: user left the page, sequence stopped. v1=state at exit //readFaults debug 05/10/2026
 									faultsStateMachine = 0xFF; // interrompe eventuale sequenza UDS in corso
 									dashboard_menu_indent_level = 0;
 									sendMainDashboardPageToSlaveBaccable();
