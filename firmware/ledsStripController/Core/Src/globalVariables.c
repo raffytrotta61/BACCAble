@@ -178,6 +178,7 @@ const char *FW_VERSION=_FW_VERSION;
 			{'A','t','t','i','v','a',' ','D','y','n','o',' ',' ',' ',' ',' ',' ',' '},
 			{'A','t','t','i','v','a',' ','E','S','C','/','T','C',' ',' ',' ',' ',' '},
 			{'F','r','o','n','t',' ','B','r','a','k','e',' ','N','o','r','m','a','l'},
+<<<<<<< HEAD
 			{'4','W','D',' ',' ','A','t','t','i','v','a','t','a',' ',' ',' ',' ',' '},
 			{'M','e','n','u',' ','P','r','i','n','c','i','p','a','l','e',' ',' ',' '},
 			{'M','e','n','u',' ','P','a','r','a','m','e','t','r','i',' ',' ',' ',' '},
@@ -377,7 +378,7 @@ const char *FW_VERSION=_FW_VERSION;
 	uint8_t RF_fob_number=0;
 
 	//QV_EXHAUST_FLAP_FUNCTION_ENABLED
-	uint8_t QV_exhaust_flap_function_enabled=0;
+	uint8_t QV_exhaust_flap_function_enabled=0; //0=disabled, 1=enabled (double click / menu), 2=enabled + automatic with the drive style (D/R open, N/A close) //exhaust valves DR 11/10/2026
 	uint8_t ForceQVexhaustValveOpened=0; //state machine: 0=valve automatically selected by ECU, 1=connection request to send, 2=tester present to send, 3=temporary param overwrite, 4=return control to ECU to send
 	uint32_t lastSentQVexhaustValveMsgTime=0;
 	CAN_TxHeaderTypeDef forceQVexhaustValveMsgHeader[4] ={{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA17F1, .DLC=3},{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA17F1, .DLC=3},{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA17F1, .DLC=7},{.IDE=CAN_ID_EXT, .RTR = CAN_RTR_DATA, .ExtId=0x18DA17F1, .DLC=5}};
@@ -390,6 +391,10 @@ const char *FW_VERSION=_FW_VERSION;
 	uint32_t exhaustValveMosfetCommandTime=0; //time when mosfet was closed
 	uint8_t ChineseExhaustValveRequest=0; //0=no request, 'O'=open request, 'C'=Close request
 	uint8_t chineseValveIsOpened=0; //0=closed, 1=opened
+	uint8_t exhaustValvesDNAmode=0xFF; //drive style the valves were last set for (function value 2), 0xFF=none yet //exhaust valves DR 11/10/2026
+	uint8_t exhaustValvesReassert=0; //1=the engine started again: the next drive style received sets the valves again (function value 2) //exhaust valves DR 11/10/2026
+	uint8_t exhaustValvesEngineRunning=0; //1=engine running (rpm went above EXHAUST_VALVES_ENGINE_RUNNING_RPM, back to 0 only at rpm 0), to detect the engine starting again //exhaust valves DR 11/10/2026
+	uint8_t exhaustValvesOpenRequested=0; //1=the user wants the valves open (double click / menu): kept in ram while the engine is off and applied again as soon as it rotates //exhaust valves memory 11/10/2026
 
 	//pumpForce test25/07/2026 - BEGIN
 	// Definizioni variabili per la sequenza UDS di forzatura pompa carburante (ECM 0x10)
@@ -478,6 +483,7 @@ const char *FW_VERSION=_FW_VERSION;
 	volatile uint32_t last_pdc_shot_time = 0; //when the push was sent
 	uint8_t pdcMsgData[8]={0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	CAN_TxHeaderTypeDef pdcMsgHeader={.IDE = CAN_ID_STD, .RTR = CAN_RTR_DATA, .StdId = 0x5B0, .DLC = 8};
+	uint32_t parkMuteReverseStartTime=0; //when the reverse gear was seen engaged, 0=not engaged //park mute reverse fix 13/10/2026
 	uint32_t parkMuteLastEvaluationTime=0; //last time parkMuteEvaluate() ran (every 30 ms, only with the function enabled) //park mute brake from C1 10/10/2026
 	volatile uint8_t parkMuteBrakePressed=0; //1=brake pressed, as sent by C1 over uart (0x107 is not on the C2 bus) //park mute brake from C1 10/10/2026
 
