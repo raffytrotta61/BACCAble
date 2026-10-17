@@ -1017,18 +1017,18 @@
 						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Attendi...  ", 12);
 						commandsMenuEnabled=0; //disable menu movement
 					}else{
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Canc. Errori", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Cancella Errori", 15);
 						commandsMenuEnabled=1; //enable menu movement
 					}
 				}
 				break;
 			case 4: //immo
 				if(immobilizerEnabled){
-					dashboard_main_menu_array[main_dashboardPageIndex][14]='N'; //on
-					dashboard_main_menu_array[main_dashboardPageIndex][15]=' ';
+					dashboard_main_menu_array[main_dashboardPageIndex][13]='N'; //on
+					dashboard_main_menu_array[main_dashboardPageIndex][14]=' ';
 				}else{
-					dashboard_main_menu_array[main_dashboardPageIndex][14]='F'; //off
-					dashboard_main_menu_array[main_dashboardPageIndex][15]='F';
+					dashboard_main_menu_array[main_dashboardPageIndex][13]='F'; //off
+					dashboard_main_menu_array[main_dashboardPageIndex][14]='F';
 				}
 				break;
 			case 5: //dyno
@@ -1244,10 +1244,10 @@
 				break;
 			case 5: //{'S','h','i','f','t',' ','R','P','M',' ','3','0','0','0',},
 				floatToStr(tmpfloatString,(float)shift_threshold,0,5);
-				dashboard_setup_menu_array[setup_dashboardPageIndex][10]=tmpfloatString[0];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][11]=tmpfloatString[1];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][12]=tmpfloatString[2];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][13]=tmpfloatString[3];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][13]=tmpfloatString[0];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][14]=tmpfloatString[1];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][15]=tmpfloatString[2];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][16]=tmpfloatString[3];
 				break;
 			case 6: //{'[',' ',']','M','y','2','3',' ','I','P','C', },
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[function_ipc_my23_is_installed];
