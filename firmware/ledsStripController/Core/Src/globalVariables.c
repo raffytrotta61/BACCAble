@@ -171,57 +171,58 @@ const char *FW_VERSION=_FW_VERSION;
 	uint8_t dashboard_main_menu_array_len=16;
 	uint8_t dashboard_main_menu_array[20][DASHBOARD_MESSAGE_MAX_LENGTH]={
 			{},
-			{'M','o','s','t','r','a',' ','P','a','r','a','m','e','t','r','i',' ',' '},
-			{'L','e','g','g','i',' ','E','r','r','o','r','i',' ',' ',' ',' ',' ',' '},
-			{'C','a','n','c','e','l','l','a',' ','E','r','r','o','r','i',' ',' ',' '},
-			{'I','m','m','o','b','i','l','i','z','e','r',' ','O','N',' ',' ',' ',' '},
-			{'A','t','t','i','v','a',' ','D','y','n','o',' ',' ',' ',' ',' ',' ',' '},
-			{'A','t','t','i','v','a',' ','E','S','C','/','T','C',' ',' ',' ',' ',' '},
+			{'S','h','o','w',' ','P','a','r','a','m','e','t','e','r','s',' ',' ',' '},
+			{'R','e','a','d',' ','F','a','u','l','t','s',' ',' ',' ',' ',' ',' ',' '},
+			{'C','l','e','a','r',' ','F','a','u','l','t','s',' ',' ',' ',' ',' ',' '},
+			{'I','m','m','o','b','i','l','i','z','e','r',' ',' ','O','N',' ',' ',' '},
+			{'T','o','g','g','l','e',' ','D','Y','N','O',' ',' ',' ',' ',' ',' ',' '},
+			{'T','o','g','g','l','e',' ','E','S','C','/','T','C',' ',' ',' ',' ',' '},
 			{'F','r','o','n','t',' ','B','r','a','k','e',' ','N','o','r','m','a','l'},
-			{'4','W','D',' ',' ','A','t','t','i','v','a','t','a',' ',' ',' ',' ',' '},
-			{'M','e','n','u',' ','P','r','i','n','c','i','p','a','l','e',' ',' ',' '},
-			{'M','e','n','u',' ','P','a','r','a','m','e','t','r','i',' ',' ',' ',' '},
-			{'A','t','t','i','v','a',' ','H','A','S',' ',' ',' ',' ',' ',' ',' ',' '},
-			{'A','p','r','i',' ','V','a','l','v','o','l','e',' ',' ',' ',' ',' ',' '},
-			{'S','a','l','v','a',' ','L','o','g',' ','s','u',' ','F','i','l','e',' '},
-			{'R','e','s','e','t',' ','S','t','a','t','i','s','t','i','c','h','e',' '},
-			{'M','a','x',' ','H','o','l','d',' ','O','F','F',' ',' ',' ',' ',' ',' '},
+			{'4','W','D',' ',' ','E','n','a','b','l','e','d',' ',' ',' ',' ',' ',' '},
+			{'M','a','i','n',' ','S','e','t','u','p',' ','M','e','n','u',' ',' ',' '},
+			{'P','a','r','a','m','s',' ','S','e','t','u','p',' ','M','e','n','u',' '},
+			{'E','n','a','b','l','e',' ','H','A','S',' ',' ',' ',' ',' ',' ',' ',' '},
+			{'T','o','g','g','l','e',' ','E','x','h','a','u','s','t',' ',' ',' ',' '}, //exhaust valves DR 11/10/2026 - was "Toggle QV Valve"
+			{'S','a','v','e',' ','L','o','g',' ','t','o',' ','F','i','l','e',' ',' '},
+			{'R','e','s','e','t',' ','S','t','a','t','i','s','t','i','c','s',' ',' '},
+		{'M','a','x',' ','H','o','l','d',' ','O','F','F',' ',' ',' ',' ',' ',' '},
 
 	};
 	uint8_t setup_dashboardPageIndex=0;
-	uint8_t total_pages_in_setup_dashboard_menu=31; //elm327 function 26/08/2026 - was 30, ELM327 entry added
-	uint8_t dashboard_setup_menu_array[31][DASHBOARD_MESSAGE_MAX_LENGTH]={ //elm327 function 26/08/2026 - was [30], the array was full
-			{'S','a','l','v','a',' ','&',' ','E','s','c','i',' ',' ',' ',' ',' ',' '},
+	uint8_t total_pages_in_setup_dashboard_menu=32; //elm327 function 26/08/2026 - was 30, ELM327 entry added //DNA memory 18/10/2026 - was 31
+	uint8_t dashboard_setup_menu_array[32][DASHBOARD_MESSAGE_MAX_LENGTH]={ //elm327 function 26/08/2026 - was [30], the array was full //DNA memory 18/10/2026 - was [31]
+			{'S','A','V','E','&','E','X','I','T',' ',' ',' ',' ',' ',' ',' ',' ',' '},
 			{'O',' ',' ','S','t','a','r','t','&','S','t','o','p',' ',' ',' ',' ',' '},
-			{'C','o','p','p','i','a',' ','L','.','C','.',' ',' ','1','0','0','N','m'},
+			{'L','a','u','n','c','h','T','o','r','q','u','e',' ','1','0','0','N','m'},
 			{'O',' ',' ','L','e','d',' ','C','o','n','t','r','o','l','l','e','r',' '},
-			{'O',' ',' ','I','n','d','i','c','.',' ','C','a','m','b','i','a','t','a'},
-			{'R','P','M',' ','C','a','m','b','i','a','t','a',' ','3','0','0','0',' '},
+			{'O',' ',' ','S','h','i','f','t',' ','I','n','d','i','c','a','t','o','r'},
+			{'S','h','i','f','t',' ','R','P','M',' ','3','0','0','0',' ',' ',' ',' '},
 			{'O',' ',' ','M','y','2','3',' ','I','P','C',' ',' ',' ',' ',' ',' ',' '},
-			{'O',' ',' ','A','v','v','i','s','o',' ','R','i','g','e','n','.',' ',' '},
-			{0xD8,' ',' ','A','v','v','i','s','o',' ','C','i','n','t','u','r','e',' '},
-			{'O',' ',' ','I','n','s','t','r','.',' ','I','n','f','o',' ',' ',' ',' '},
-			{'O',' ',' ','E','S','C','/','T','C',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+			{'O',' ',' ','R','e','g','e','n','.',' ','A','l','e','r','t',' ',' ',' '},
+			{0xD8,' ',' ','S','e','a','t','b','e','l','t',' ','A','l','a','r','m',' '},
+			{'O',' ',' ','R','o','u','t','e',' ','M','e','s','s','a','g','e','s',' '},
+			{'O',' ',' ','E','S','C','/','T','C',' ','C','u','s','t','o','m','.',' '},
 			{'O',' ',' ','D','y','n','o',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
-			{'O',' ',' ','A','C','C',' ','V','i','r','t','u','a','l','e',' ',' ',' '},
-			{'O',' ',' ','B','u','r','n','o','u','t',' ',' ',' ',' ',' ',' ',' ',' '},
-			{'O',' ',' ','E','s','c','l','u','s','i','o','n','e',' ','Q','4',' ',' '},
-			{'O',' ',' ','C','a','n','c','e','l','.',' ','E','r','r','o','r','i',' '},
-			{'O',' ',' ','L','e','g','g','i',' ','E','r','r','o','r','i',' ',' ',' '},
-			{'O',' ',' ','A','v','v','i','o',' ','R','e','m','o','t','o',' ',' ',' '},
-			{0xD8,' ',' ','P','a','r','a','m','.',' ','D','i','e','s','e','l',' ',' '},
-			{'O',' ',' ','L','a','m','p','e','g','.',' ','O','d','o','m','.',' ',' '},
+			{'O',' ',' ','A','C','C',' ','V','i','r','t','u','a','l',' ','P','a','d'},
+			{'O',' ',' ','B','r','a','k','e','s',' ','O','v','e','r','r','i','d','e'},
+			{'O',' ',' ','4','W','D',' ','D','i','s','a','b','l','e','r',' ',' ',' '},
+			{'O',' ',' ','C','l','e','a','r',' ','F','a','u','l','t','s',' ',' ',' '},
+			{'O',' ',' ','R','e','a','d',' ',' ','F','a','u','l','t','s',' ',' ',' '},
+			{'O',' ',' ','R','e','m','o','t','e',' ','S','t','a','r','t',' ',' ',' '},
+			{0xD8,' ',' ','D','i','e','s','e','l',' ',' ',' ','P','a','r','a','m','s'},
+			{'O',' ',' ','O','d','o','m','e','t','e','r',' ','B','l','i','n','k',' '},
 			{'O',' ',' ','P','e','d','a','l',' ','B','o','o','s','t','e','r',' ',' '},
 			{'P','e','d','a','l',' ','P','o','w','e','r',':',' ','0',' ',' ',' ',' '},
-			{'O',' ',' ','S','p','e','c','c','h','i',' ','P','a','r','k','i','n','g'},
-			{'O',' ',' ','R','i','p','a','r','t','.',' ','A','C','C',' ',' ',' ',' '},
-			{'O',' ',' ','C','h','i','u','d','i',' ','V','e','t','r','i',' ',' ',' '},
-			{'O',' ',' ','A','p','r','i',' ','V','e','t','r','i',' ',' ',' ',' ',' '},
-			{'O',' ',' ','H','A','S',' ','V','i','r','t','u','a','l','e',' ',' ',' '},
-			{'O',' ',' ','V','a','l','v','o','l','e',' ','Q','V',' ',' ',' ',' ',' '},
-			{'O',' ',' ','F','r','o','n','t',' ','P','a','r','k',' ','M','u','t','e'},
-			{'O',' ',' ','S','n','i','f','f','e','r',' ',' ',' ',' ',' ',' ',' ',' '}, //sniffer function 24/08/2026
-			{'O',' ',' ','E','L','M','3','2','7',' ',' ',' ',' ',' ',' ',' ',' ',' '}, //elm327 function 26/08/2026 - last free slot of the array
+			{'O',' ',' ','P','a','r','k',' ','M','i','r','r','o','r',' ',' ',' ',' '},
+			{'O',' ',' ','A','C','C',' ','A','u','t','o','s','t','a','r','t',' ',' '},
+			{'O',' ',' ','C','l','o','s','e',' ','W','i','n','d','o','w','s',' ',' ',},
+			{'O',' ',' ','O','p','e','n',' ',' ','W','i','n','d','o','w','s',' ',' ',},
+			{'O',' ',' ','H','A','S',' ','V','i','r','t','u','a','l',' ','P','a','d',},
+			{'O',' ',' ','E','x','h','a','u','s','t',' ','F','l','a','p',' ',' ',' ',}, //exhaust valves DR 11/10/2026 - was "QV Exhaust Flap"; " DR" at the end with value 2
+			{'O',' ',' ','F','r','o','n','t',' ','P','a','r','k',' ','M','u','t','e',},
+			{'O',' ',' ','S','N','I','F','F','E','R',' ',' ',' ',' ',' ',' ',' ',' ',}, //sniffer function 24/08/2026
+			{'O',' ',' ','E','L','M','3','2','7',' ',' ',' ',' ',' ',' ',' ',' ',' ',}, //elm327 function 26/08/2026 - last free slot of the array
+			{'O',' ',' ','D','N','A',' ','M','e','m','o','r','y',' ',' ',' ',' ',' ',}, //DNA memory 18/10/2026
 
 		};
 
@@ -393,6 +394,12 @@ const char *FW_VERSION=_FW_VERSION;
 	uint8_t exhaustValvesDNAmode=0xFF; //drive style the valves were last set for (function value 2), 0xFF=none yet //exhaust valves DR 11/10/2026
 	uint8_t exhaustValvesReassert=0; //1=the engine started again: the next drive style received sets the valves again (function value 2) //exhaust valves DR 11/10/2026
 	uint8_t exhaustValvesEngineRunning=0; //1=engine running (rpm went above EXHAUST_VALVES_ENGINE_RUNNING_RPM, back to 0 only at rpm 0), to detect the engine starting again //exhaust valves DR 11/10/2026
+	uint8_t  dnaMemoryFunctionEnabled=0; //0=disabled, 1=enabled, saved on flash (slot 33) //DNA memory 18/10/2026
+	uint8_t  dnaMemoryStyle=0xFF; //drive style to restore (0x384 codes), 0xFF=none yet //DNA memory 18/10/2026
+	volatile uint8_t dnaMemoryWakeUp=0; //1=the car just woke up //DNA memory 18/10/2026
+	uint8_t  dnaMemoryRestoreArmed=0; //1=restore at the next engine start //DNA memory 18/10/2026
+	uint32_t dnaMemoryEngineOnTime=0; //when the engine was seen running, 0=not running //DNA memory 18/10/2026
+	uint32_t dnaMemoryCommandTime=0; //when the restore command was sent to BH, 0=none //DNA memory 18/10/2026
 	uint8_t exhaustValvesOpenRequested=0; //1=the user wants the valves open (double click / menu): kept in ram while the engine is off and applied again as soon as it rotates //exhaust valves memory 11/10/2026
 
 	//pumpForce test25/07/2026 - BEGIN
@@ -506,6 +513,19 @@ const char *FW_VERSION=_FW_VERSION;
 #endif
 
 #if defined(BHbaccable)
+	//DNA memory 18/10/2026 - see functions_BHbaccable.c
+	volatile uint8_t dnaRestoreRequest=0;
+	uint8_t  dnaRestoreState=0;
+	uint8_t  dnaRestoreTarget=0;
+	uint8_t  dnaRestorePass=0;
+	uint8_t  dnaRestoreShortLeft=0;
+	uint8_t  dnaRestoreDir=0;
+	uint8_t  dnaRestoreLong=0;
+	uint8_t  dnaRestoreSkipNext=0;
+	uint32_t dnaRestoreLongStart=0;
+	uint32_t dnaRestoreEndTime=0;
+	uint32_t dnaRestoreLast46CTime=0;
+	uint32_t dnaRestoreLast256Time=0;
 	uint32_t lastSentTelematic_display_info_msg_Time=0;
 	uint8_t telematic_display_info_field_totalFrameNumber=(DASHBOARD_MESSAGE_MAX_LENGTH / 3) - 1; //it shall be a multiple of 3 reduced by 1 (example: 3x2-1=5)
 	uint8_t telematic_display_info_field_frameNumber=0; //current frame

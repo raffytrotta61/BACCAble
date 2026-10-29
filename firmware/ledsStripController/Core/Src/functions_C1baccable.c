@@ -61,6 +61,7 @@
 		//elm327CheckActivationTimeout()). The two modes share the single usb cdc port, so they are mutually
 		//exclusive: the setup menu already clears one when the other is enabled, this is just the safety net.
 		elm327FunctionEnabled=(uint8_t)readFromFlash(32);
+		dnaMemoryFunctionEnabled=(uint8_t)readFromFlash(33); //read again at every wake up, see dnaMemoryProcess() //DNA memory 18/10/2026
 		if(elm327FunctionEnabled && snifferFunctionEnabled==0) elm327Start();
 		//arise trigger to notify enabled functions to slave boards with dedicated messages,after some seconds
 		allProcessorsWakeupTime=currentTime;
@@ -211,8 +212,14 @@
 			elm327ActivationTime=currentTime;
 			return;
 		}
-		if(currentTime-elm327ActivationTime<SNIFFER_ACTIVATION_TIMEOUT_MS) return; //still within the grace window
-		elm327Stop(); //host never showed up, or went away: back to being a plain baccable
+		//usb suspend guard 25/10/2026 - dev_state has left CONFIGURED. If the host had already enumerated us and
+		//then went quiet (a routine PC side usb suspend, or an unplug: indistinguishable here, no vbus sensing),
+		//hold the mode for ELM327_SUSPEND_HOLD_MS before giving up. During the hold elm327InUse stays 1, so
+		//lowConsume keeps blocking sleep on its own - no other change is needed. If instead the host never
+		//configured us at all, keep the short SNIFFER_ACTIVATION_TIMEOUT_MS give up window as before.
+		uint32_t graceWindow = elm327ActivationConfirmed ? ELM327_SUSPEND_HOLD_MS : SNIFFER_ACTIVATION_TIMEOUT_MS;
+		if(currentTime-elm327ActivationTime<graceWindow) return; //still within the grace window
+		elm327Stop(); //host never showed up, or stayed away past the guard: back to being a plain baccable
 	}
 	//elm327 function 26/08/2026 - END
 
@@ -263,10 +270,65 @@
 		exhaustValvesApply(reassert);
 	}
 
+	//DNA memory 18/10/2026 - BEGIN
+	//The drive style in use with the engine running is memorized (frozen below DNA_MEMORY_ENGINE_RUNNING_RPM, so the
+	//style the BCM may set while the engine stops is not taken). After the car slept (wake up from low consume), at the
+	//first engine start, after DNA_MEMORY_SETTLE_MS, if the drive style is not the memorized one BH is asked once to
+	//set it: the DNA selector (DSCM, 0x256) is on the BH bus. Then nothing more until the car sleeps again: the user is
+	//free to change the drive style, and the new choice is memorized. A stop of the Start&Stop does not arm the restore.
+	static char dnaMemoryLetter(uint8_t mode){ //0x384 code -> letter sent to BH, 0 if unknown
+		switch(mode){
+			case 0x10: return 'A';
+			case 0x00: return 'N';
+			case 0x08: return 'D';
+			case 0x30: return 'R';
+			default:   return 0;
+		}
+	}
+
+	static void dnaMemoryProcess(void){
+		if(dnaMemoryWakeUp){ //the car just woke up: setting read from flash again, restore armed
+			dnaMemoryWakeUp=0;
+			dnaMemoryFunctionEnabled=(uint8_t)readFromFlash(33);
+			dnaMemoryRestoreArmed=1;
+		}
+		if(!dnaMemoryFunctionEnabled){
+			dnaMemoryRestoreArmed=0;
+			return;
+		}
+		if(currentRpmSpeed<=DNA_MEMORY_ENGINE_RUNNING_RPM){ //engine off: memory frozen
+			dnaMemoryEngineOnTime=0;
+			return;
+		}
+		if(dnaMemoryEngineOnTime==0) dnaMemoryEngineOnTime=currentTime;
+		uint8_t letter=dnaMemoryLetter(currentDNAmode);
+		if(dnaMemoryRestoreArmed){
+			if(currentTime-dnaMemoryEngineOnTime<DNA_MEMORY_SETTLE_MS) return; //the BCM is still setting its start drive style
+			dnaMemoryRestoreArmed=0; //one attempt only for each wake up
+			char wanted=dnaMemoryLetter(dnaMemoryStyle);
+			if(wanted && letter && dnaMemoryStyle!=currentDNAmode){
+				uint8_t tmpArr[3]={BhBusID,BHcmdDnaMemoryRestore,(uint8_t)wanted};
+				addToUARTSendQueue(tmpArr, 3);
+				dnaMemoryCommandTime=currentTime;
+				SNIFFER_DEBUG2(0x2800, dnaMemoryStyle, currentDNAmode); //DNA memory: restore requested to BH. v1=memorized style, v2=current style (0x00 N, 0x08 D, 0x10 A, 0x30 R)
+			}else{
+				SNIFFER_DEBUG2(0x2801, dnaMemoryStyle, currentDNAmode); //DNA memory: nothing to restore (same style, or none memorized). v1=memorized style (0xFF none), v2=current style
+			}
+			return;
+		}
+		if(dnaMemoryCommandTime){
+			if(currentTime-dnaMemoryCommandTime<DNA_MEMORY_RESTORE_HOLD_MS) return; //BH is moving the selector: intermediate styles are not memorized
+			dnaMemoryCommandTime=0;
+		}
+		if(letter) dnaMemoryStyle=currentDNAmode;
+	}
+	//DNA memory 18/10/2026 - END
+
 	void C1baccablePeriodicCheck(){
 		#ifndef DISABLE_LOW_CONSUME
 			lowConsume_process();
 		#endif
+		dnaMemoryProcess(); //DNA memory 18/10/2026
 
 		if(QV_exhaust_flap_function_enabled){
 
@@ -908,7 +970,7 @@
 					show_4wd_disabled_overlay = 0; // 1 sec elapsed. hide overlay // 4wd constraint relax change 24/08/2026
 				} // 4wd constraint relax change 24/08/2026
 				memset(&uartTxMsg[1], ' ', DASHBOARD_MESSAGE_MAX_LENGTH); // 4wd constraint relax change 24/08/2026
-				uint8_t msg[] = ">>4WD Disattivata<<"; // 4wd constraint relax change 24/08/2026
+				uint8_t msg[] = ">>4WD DISABLED<<"; // 4wd constraint relax change 24/08/2026
 				memcpy(&uartTxMsg[1], msg, 16); // 4wd constraint relax change 24/08/2026
 				addToUARTSendQueue(uartTxMsg, UART_BUFFER_SIZE); // 4wd constraint relax change 24/08/2026
 				return; // 4wd constraint relax change 24/08/2026
@@ -923,25 +985,22 @@
 					memset(dashboard_main_menu_array[2], ' ', DASHBOARD_MESSAGE_MAX_LENGTH);
 					switch(faultsStateMachine){
 						case 0: case 1: case 2: // in attesa risposta BODY o ECM //readFaults ECM 10/10/2026
-							dashboard_main_menu_array[2][0]='A';
-							dashboard_main_menu_array[2][1]='t';
-							dashboard_main_menu_array[2][2]='t';
-							dashboard_main_menu_array[2][3]='e';
-							dashboard_main_menu_array[2][4]='n';
-							dashboard_main_menu_array[2][5]='d';
-							dashboard_main_menu_array[2][6]='i';
+							dashboard_main_menu_array[2][0]='W';
+							dashboard_main_menu_array[2][1]='A';
+							dashboard_main_menu_array[2][2]='I';
+							dashboard_main_menu_array[2][3]='T';
 							break;
 						case 3: // lista DTC disponibile
 							if(faultsDTCcount==0){
 								dashboard_main_menu_array[2][0]='N';
-								dashboard_main_menu_array[2][1]='o';
+								dashboard_main_menu_array[2][1]='O';
 								dashboard_main_menu_array[2][2]=' ';
-								dashboard_main_menu_array[2][3]='E';
-								dashboard_main_menu_array[2][4]='r';
-								dashboard_main_menu_array[2][5]='r';
-								dashboard_main_menu_array[2][6]='o';
-								dashboard_main_menu_array[2][7]='r';
-								dashboard_main_menu_array[2][8]='i';
+								dashboard_main_menu_array[2][3]='F';
+								dashboard_main_menu_array[2][4]='A';
+								dashboard_main_menu_array[2][5]='U';
+								dashboard_main_menu_array[2][6]='L';
+								dashboard_main_menu_array[2][7]='T';
+								dashboard_main_menu_array[2][8]='S';
 							}else{
 								uint8_t b0=faultsDTCbytes[faultsDTCsubmenuIndex][0];
 								uint8_t b1=faultsDTCbytes[faultsDTCsubmenuIndex][1];
@@ -955,11 +1014,11 @@
 								// successivi dell'ECM. "ENGINE " non ci sta nei 18 caratteri insieme al contatore: sul display
 								// standard si usa "ECM" (allineato a "BODY", codice dalla colonna 5), sul display grande "ENGINE".
 								#if DASHBOARD_MESSAGE_MAX_LENGTH >= 24
-									static const char ecmPrefix[]="Motore ";
+									static const char ecmPrefix[]="ENGINE ";
 								#else
 									static const char ecmPrefix[]="ECM  ";
 								#endif
-								static const char bodyPrefix[]="Body ";
+								static const char bodyPrefix[]="BODY ";
 								static const char absPrefix[]="ABS  "; //readFaults ABS 10/10/2026
 								const char* prefix=(faultsDTCsubmenuIndex<faultsDTCbodyCount) ? bodyPrefix : ((faultsDTCsubmenuIndex<faultsDTCecmEnd) ? ecmPrefix : absPrefix);
 								uint8_t c=0; // colonna corrente
@@ -992,12 +1051,12 @@
 							break;
 						case 4: // TIMEOUT
 							dashboard_main_menu_array[2][0]='T';
-							dashboard_main_menu_array[2][1]='i';
-							dashboard_main_menu_array[2][2]='m';
-							dashboard_main_menu_array[2][3]='e';
-							dashboard_main_menu_array[2][4]='o';
-							dashboard_main_menu_array[2][5]='u';
-							dashboard_main_menu_array[2][6]='t';
+							dashboard_main_menu_array[2][1]='I';
+							dashboard_main_menu_array[2][2]='M';
+							dashboard_main_menu_array[2][3]='E';
+							dashboard_main_menu_array[2][4]='O';
+							dashboard_main_menu_array[2][5]='U';
+							dashboard_main_menu_array[2][6]='T';
 							break;
 						default:
 							break;
@@ -1006,7 +1065,7 @@
 					//readFaults fix 05/10/2026 - while reading, WAIT / DTC / TIMEOUT are written into this very row of the main
 					//menu: back on the main menu (RES, timeout, end of list) the row kept the last DTC shown instead of the
 					//menu entry. Put the label back whenever the main menu is shown.
-					static const uint8_t readFaultsLabel[]={'L','e','g','g','i',' ','E','r','r','o','r','i'};
+					static const uint8_t readFaultsLabel[]={'R','e','a','d',' ','F','a','u','l','t','s'};
 					memset(dashboard_main_menu_array[2], ' ', DASHBOARD_MESSAGE_MAX_LENGTH);
 					memcpy(dashboard_main_menu_array[2], readFaultsLabel, sizeof(readFaultsLabel));
 				}
@@ -1014,27 +1073,27 @@
 			case 3:
 				if(function_clear_faults_enabled==1){
 					if(clearFaultsRequest>0){
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Attendi...  ", 12);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "WAIT...     ", 12);
 						commandsMenuEnabled=0; //disable menu movement
 					}else{
-						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Cancella Errori", 15);
+						memcpy(dashboard_main_menu_array[main_dashboardPageIndex], "Clear Faults", 12); //same look as the other entries (was "CLEAR FAULTS") 25/10/2026
 						commandsMenuEnabled=1; //enable menu movement
 					}
 				}
 				break;
 			case 4: //immo
 				if(immobilizerEnabled){
-					dashboard_main_menu_array[main_dashboardPageIndex][13]='N'; //on
-					dashboard_main_menu_array[main_dashboardPageIndex][14]=' ';
+					dashboard_main_menu_array[main_dashboardPageIndex][14]='N'; //on
+					dashboard_main_menu_array[main_dashboardPageIndex][15]=' ';
 				}else{
-					dashboard_main_menu_array[main_dashboardPageIndex][13]='F'; //off
-					dashboard_main_menu_array[main_dashboardPageIndex][14]='F';
+					dashboard_main_menu_array[main_dashboardPageIndex][14]='F'; //off
+					dashboard_main_menu_array[main_dashboardPageIndex][15]='F';
 				}
 				break;
 			case 5: //dyno
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','u','t','o',' ','F','e','r','m','a',' ',' '};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
@@ -1044,14 +1103,14 @@
 			case 7: //front brake
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','u','t','o',' ','F','e','r','m','a',' ',' '};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
 
 				if(printEnableDyno>0){
-					printEnableDyno--;
-					uint8_t enableDynoMsg[12]={BhBusIDparamString,'A','t','t','i','v','a',' ','D','y','n','o'};
+				printEnableDyno--;
+					uint8_t enableDynoMsg[12]={BhBusIDparamString,'E','N','A','B','L','E',' ','D','Y','N','O'};
 					addToUARTSendQueue(enableDynoMsg, 12);//print message "Enable Dyno"
 					return;
 				}
@@ -1173,7 +1232,7 @@
 			case 8: //4wd
 				if(printStopTheCar>0){
 					printStopTheCar--;
-					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'A','u','t','o',' ','F','e','r','m','a',' ',' '};
+					uint8_t stopTheCarMsg[13]={BhBusIDparamString,'S','T','O','P',' ','T','H','E',' ','C','A','R'};
 					addToUARTSendQueue(stopTheCarMsg, 13);//print message "stop the car"
 					return;
 				}
@@ -1244,10 +1303,10 @@
 				break;
 			case 5: //{'S','h','i','f','t',' ','R','P','M',' ','3','0','0','0',},
 				floatToStr(tmpfloatString,(float)shift_threshold,0,5);
-				dashboard_setup_menu_array[setup_dashboardPageIndex][13]=tmpfloatString[0];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][14]=tmpfloatString[1];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][15]=tmpfloatString[2];
-				dashboard_setup_menu_array[setup_dashboardPageIndex][16]=tmpfloatString[3];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][10]=tmpfloatString[0];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][11]=tmpfloatString[1];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][12]=tmpfloatString[2];
+				dashboard_setup_menu_array[setup_dashboardPageIndex][13]=tmpfloatString[3];
 				break;
 			case 6: //{'[',' ',']','M','y','2','3',' ','I','P','C', },
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[function_ipc_my23_is_installed];
@@ -1287,23 +1346,23 @@
 				break;
 			case 18: //{'Ø',' ',' ','D','i','e','s','e','l',' ',' ',' ','P','a','r','a','m','s'},
 				if(function_is_diesel_enabled){
-					dashboard_setup_menu_array[setup_dashboardPageIndex][10] ='D';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='s';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='l';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][16] =' ';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='D';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='i';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='s';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='e';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='l';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][9] =' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][10]=' ';
 				}else{
-					dashboard_setup_menu_array[setup_dashboardPageIndex][10] ='B';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][11] ='e';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][12] ='n';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][13] ='z';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][14] ='i';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][15] ='n';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][16] ='a';
-					dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][3] ='G';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][4] ='a';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][5] ='s';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][6] ='o';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][7] ='l';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][8] ='i';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][9] ='n';
+					dashboard_setup_menu_array[setup_dashboardPageIndex][10]='e';
 				}
 				break;
 			case 19: //odometer blink
@@ -1422,13 +1481,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_acc_autostart];
 				switch(function_acc_autostart){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][15]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
 						break;
 					case 1: //simulates RES button press
-						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='R';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='R';
 						break;
 					case 2: //simulates + button press
-						dashboard_setup_menu_array[setup_dashboardPageIndex][15]='+';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='+';
 						break;
 					default: //we will never end here
 						break;
@@ -1438,13 +1497,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_close_windows_with_door_lock];
 				switch(function_close_windows_with_door_lock){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
 						break;
 					case 1: //Close Windows 1
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='1';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='1';
 						break;
 					case 2: //Close Windows 2
-						dashboard_setup_menu_array[setup_dashboardPageIndex][16]='2';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='2';
 						break;
 					default: //we will never end here
 						break;
@@ -1454,13 +1513,13 @@
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[!!function_open_windows_with_door_lock];
 				switch(function_open_windows_with_door_lock){
 					case 0: //off
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]=' ';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]=' ';
 						break;
 					case 1: //Close Windows 1
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='1';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='1';
 						break;
 					case 2: //Close Windows 2
-						dashboard_setup_menu_array[setup_dashboardPageIndex][14]='2';
+						dashboard_setup_menu_array[setup_dashboardPageIndex][17]='2';
 						break;
 					default: //we will never end here
 						break;
@@ -1483,6 +1542,9 @@
 			case 30: //{'O',' ',' ','E','L','M','3','2','7'} //elm327 function 26/08/2026
 				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[elm327FunctionEnabled];
 				break;
+			case 31: //{'O',' ',' ','D','N','A',' ','M','e','m','o','r','y'} //DNA memory 18/10/2026
+				dashboard_setup_menu_array[setup_dashboardPageIndex][0]=checkbox_symbols[dnaMemoryFunctionEnabled];
+				break;
 			default:
 				break;
 		}
@@ -1499,17 +1561,17 @@
 		switch(params_setup_dashboardPageIndex){
 			case 0: //{'S','A','V','E','&','E','X','I','T',},
 				uartTxMsg[1]='S';
-				uartTxMsg[2]='a';
-				uartTxMsg[3]='l';
-				uartTxMsg[4]='v';
-				uartTxMsg[5]='a';
-				uartTxMsg[6]=' ';
-				uartTxMsg[7]='&';
-				uartTxMsg[8]=' ';
-				uartTxMsg[9]='E';
-				uartTxMsg[10]='s';
-				uartTxMsg[11]='c';
-				uartTxMsg[12]='i';
+				uartTxMsg[2]='A';
+				uartTxMsg[3]='V';
+				uartTxMsg[4]='E';
+				uartTxMsg[5]=' ';
+				uartTxMsg[6]='&';
+				uartTxMsg[7]=' ';
+				uartTxMsg[8]='E';
+				uartTxMsg[9]='X';
+				uartTxMsg[10]='I';
+				uartTxMsg[11]='T';
+				uartTxMsg[12]=0;
 				uartTxMsg[13]=0;
 				uartTxMsg[14]=0;
 				uartTxMsg[15]=0;
@@ -1569,7 +1631,7 @@
 					show_4wd_disabled_overlay = 0; // 1 sec elapsed. hide overlay // 4wd constraint relax change 24/08/2026
 				} // 4wd constraint relax change 24/08/2026
 				memset(&uartTxMsg[1], ' ', DASHBOARD_MESSAGE_MAX_LENGTH); // 4wd constraint relax change 24/08/2026
-				uint8_t msg[] = ">>4WD Disattivata<<"; // 4wd constraint relax change 24/08/2026
+				uint8_t msg[] = ">>4WD DISABLED<<"; // 4wd constraint relax change 24/08/2026
 				memcpy(&uartTxMsg[1], msg, 16); // 4wd constraint relax change 24/08/2026
 				addToUARTSendQueue(uartTxMsg, UART_BUFFER_SIZE); // 4wd constraint relax change 24/08/2026
 				return; // 4wd constraint relax change 24/08/2026
@@ -1857,7 +1919,7 @@
 
 		//it seems that stm32F072 supports only writing 2byte words
 		//write parameter
-		uint8_t paramsNumber=32; //elm327 function 26/08/2026 - was 31
+		uint8_t paramsNumber=33; //elm327 function 26/08/2026 - was 31 //DNA memory 18/10/2026 - was 32
 		uint16_t params[40] = {
 		  immobilizerEnabled,
 		  function_smart_disable_start_stop_enabled,
@@ -1891,6 +1953,7 @@
 		  parkSensorsMuteFunctionEnabled,  //slot 30: FRONT_PARK_MUTE
 		  snifferFunctionEnabled,  //slot 31: SNIFFER //sniffer function 24/08/2026
 		  elm327FunctionEnabled,  //slot 32: ELM327 //elm327 function 26/08/2026
+		  dnaMemoryFunctionEnabled,  //slot 33: DNA_MEMORY //DNA memory 18/10/2026
 		};
 
 		for (uint8_t i = 0; i < paramsNumber; i++) {
@@ -2346,7 +2409,7 @@
 					#if defined(FRONT_PARK_MUTE) //user_config 28/08/2026
 						return 1;
 					#else
-					return 0; // flash non inizializzata: default disabilitato
+						return 0; // flash non inizializzata: default disabilitato
 					#endif
 				}
 				break;
@@ -2355,7 +2418,7 @@
 					#if defined(SNIFFER) //user_config 28/08/2026
 						return 1;
 					#else
-					return 0; // flash non inizializzata: default disabilitato
+						return 0; // flash non inizializzata: default disabilitato
 					#endif
 				}
 				break;
@@ -2364,9 +2427,12 @@
 					#if defined(ELM327) //user_config 28/08/2026
 						return 1;
 					#else
-					return 0; // flash non inizializzata: default disabilitato
+						return 0; // flash non inizializzata: default disabilitato
 					#endif
 				}
+				break;
+			case 33: //DNA_MEMORY (1=enabled 0=disabled) //DNA memory 18/10/2026
+				if(tmpParam>1) return 0; // flash non inizializzata: default disabilitato
 				break;
 			default:
 				return 0;
